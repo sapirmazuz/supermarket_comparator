@@ -52,6 +52,9 @@ export default function Compare() {
               )}
             </div>
           ))}
+        
+        <h3>מיקום הסופר המשתלם ביותר:</h3>
+        <MapView address={results[0].address} />
 
           <MapView supermarkets={results} />
         </div>

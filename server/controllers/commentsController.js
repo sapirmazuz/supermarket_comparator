@@ -1,4 +1,4 @@
-const Comment = require('../models/commentsModel');
+const Comment = require('../models/commentsModels');
 
 exports.getAllComments = async (req, res) => {
   const { supermarket_id } = req.query;

@@ -13,6 +13,8 @@ export default function Products() {
   }, []);
 
   const addToCart = (product) => {
+    if (cart.find(item => item.id === product.id)) return; // למנוע כפילויות
+
     const updatedCart = [...cart, product];
     setCart(updatedCart);
     localStorage.setItem('cart', JSON.stringify(updatedCart));
@@ -21,13 +23,26 @@ export default function Products() {
   return (
     <div>
       <h2>מוצרים זמינים</h2>
+      <p>סה"כ פריטים בעגלה: {cart.length}</p>
+
       {products.length === 0 ? (
         <p>אין מוצרים להצגה</p>
       ) : (
-        products.map(p => (
-          <ProductCard key={p.id} product={p} onAdd={() => addToCart(p)} />
-        ))
+        <div style={styles.grid}>
+          {products.map(p => (
+            <ProductCard key={p.id} product={p} onAdd={() => addToCart(p)} />
+          ))}
+        </div>
       )}
     </div>
   );
 }
+
+const styles = {
+  grid: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: '15px',
+    justifyContent: 'flex-start'
+  }
+};
