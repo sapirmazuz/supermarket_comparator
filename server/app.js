@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const compareRoutes = require('./routes/compare');
 require('dotenv').config();
 
 const app = express();
@@ -14,6 +15,7 @@ app.use('/api/users', require('./routes/users'));
 app.use('/api/products', require('./routes/products'));
 app.use('/api/comments', require('./routes/comments'));
 app.use('/api/supermarkets', require('./routes/supermarkets'));
+app.use('/api/compare', compareRoutes);
 
 // Start server
 app.listen(PORT, () => {

@@ -1,9 +1,13 @@
-const Comment = require('../models/commentsModels');
+const Comment = require('../models/commentsModel');
 
-// שליפת כל התגובות
 exports.getAllComments = async (req, res) => {
+  const { supermarket_id } = req.query;
+
   try {
-    const comments = await Comment.getAll();
+    const comments = supermarket_id
+      ? await Comment.getBySupermarketId(supermarket_id)
+      : await Comment.getAll();
+
     res.json(comments);
   } catch (err) {
     res.status(500).json({ error: 'שגיאה בשליפת תגובות' });

@@ -10,6 +10,17 @@ const Comment = {
     return comments;
   },
 
+  // ✅ חדש: שליפת תגובות לפי סופרמרקט
+  getBySupermarketId: async (supermarketId) => {
+    const [comments] = await db.query(`
+      SELECT Comments.*, Users.name AS user_name
+      FROM Comments
+      JOIN Users ON Comments.user_id = Users.id
+      WHERE Comments.supermarket_id = ?
+    `, [supermarketId]);
+    return comments;
+  },
+
   create: async ({ user_id, supermarket_id, content, image_url }) => {
     const [result] = await db.query(
       'INSERT INTO Comments (user_id, supermarket_id, content, image_url, created_at) VALUES (?, ?, ?, ?, NOW())',

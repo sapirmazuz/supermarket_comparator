@@ -12,6 +12,15 @@ const Product = {
   getAll: async () => {
     const [products] = await db.query('SELECT * FROM Products');
     return products;
+  },
+
+   // ✅ פונקציה חדשה: שליפת מוצרים לפי סופרמרקט
+  getBySupermarketId: async (supermarketId) => {
+    const [products] = await db.query(
+      'SELECT * FROM Products WHERE supermarket_id = ?',
+      [supermarketId]
+    );
+    return products;
   }
 };
 

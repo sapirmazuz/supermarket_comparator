@@ -20,7 +20,10 @@ exports.addProduct = async (req, res) => {
 // שליפת כל המוצרים (לכולם)
 exports.getAllProducts = async (req, res) => {
   try {
-    const products = await Product.getAll();
+    const { supermarket_id } = req.query;
+    const products = supermarket_id
+   ? await Product.getBySupermarketId(supermarket_id)
+    : await Product.getAll();
     res.json(products);
   } catch (err) {
     res.status(500).json({ error: 'Failed to retrieve products' });
