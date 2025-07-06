@@ -1,9 +1,8 @@
 const express = require('express');
 const router = express.Router();
+const commentsController = require('../controllers/commentsController');
 
-// בדיקה ראשונית
-router.get('/', (req, res) => {
-  res.send('OK');
-});
+router.get('/', commentsController.getAllComments);
+router.post('/add', commentsController.addComment);
 
 module.exports = router;

@@ -1,11 +1,12 @@
 const express = require('express');
 const router = express.Router();
+const productsController = require('../controllers/productsController');
 const { verifyToken, requireRole } = require('../middleware/auth');
 
-// ראוט שמוגן – רק למנהלים
-router.post('/add', verifyToken, requireRole('manager'), (req, res) => {
-  // כאן תכתבי את הקוד להוספת מוצר
-  res.json({ message: 'Product added!' });
-});
+// הוספת מוצר (למנהלים בלבד)
+router.post('/add', verifyToken, requireRole('manager'), productsController.addProduct);
+
+// שליפת כל המוצרים (פתוח לכולם)
+router.get('/', productsController.getAllProducts);
 
 module.exports = router;
