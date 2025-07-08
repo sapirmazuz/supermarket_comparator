@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { login as saveLogin } from '../services/auth';
+import { Link } from 'react-router-dom';
+
 
 export default function Register() {
   const [name, setName] = useState('');
@@ -10,13 +12,25 @@ export default function Register() {
   const [role, setRole] = useState('client');
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const [supermarketName, setSupermarketName] = useState('');
+  const [supermarketAddress, setSupermarketAddress] = useState('');
+
 
   const handleRegister = async (e) => {
     e.preventDefault();
     setError('');
 
     try {
-      await api.post('/users/register', { name, email, password, role });
+      await api.post('/users/register', {
+      name,
+      email,
+      password,
+      role,
+      supermarketName: role === 'manager' ? supermarketName : undefined,
+      supermarketAddress: role === 'manager' ? supermarketAddress : undefined,
+    });
+
+
 
       // התחברות אוטומטית אחרי רישום
       const loginRes = await api.post('/users/login', { email, password });
@@ -56,9 +70,30 @@ export default function Register() {
             <option value="manager">מנהל סופר</option>
           </select>
         </div>
+        <div>
+          <label>שם הסופרמרקט (למנהלים בלבד):</label>
+          <input
+            type="text"
+            value={supermarketName}
+            onChange={(e) => setSupermarketName(e.target.value)}
+            required
+          />
+        </div>
+        <div>
+          <label>כתובת הסופרמרקט (למנהלים בלבד):</label>
+          <input
+            type="text"
+            value={supermarketAddress}
+            onChange={(e) => setSupermarketAddress(e.target.value)}
+            required
+          />
+        </div>
         <button type="submit">הרשמה</button>
       </form>
       {error && <p style={{ color: 'red' }}>{error}</p>}
+      <p style={{ marginTop: '10px' }}>
+        כבר יש לך חשבון? <Link to="/login">להתחברות</Link>
+      </p>
     </div>
   );
 }

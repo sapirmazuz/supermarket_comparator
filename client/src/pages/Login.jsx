@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { login as saveLogin } from '../services/auth';
+import { Link } from 'react-router-dom';
+
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -46,6 +48,10 @@ export default function Login() {
         <button type="submit">התחבר</button>
       </form>
       {error && <p style={{ color: 'red' }}>{error}</p>}
+       <p style={{ marginTop: '10px' }}>
+      אין לך חשבון? <Link to="/Register">להרשמה</Link>
+    </p>
     </div>
+    
   );
 }

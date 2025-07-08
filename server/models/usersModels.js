@@ -1,10 +1,10 @@
 const db = require('../db');
 
 const User = {
-  create: async ({ name, email, password, role }) => {
+  create: async ({ name, email, password, role, supermarket_id }) => {
     return await db.query(
-      'INSERT INTO Users (name, email, password, role) VALUES (?, ?, ?, ?)',
-      [name, email, password, role]
+      'INSERT INTO Users (name, email, password, role, supermarket_id) VALUES (?, ?, ?, ?, ?)',
+      [name, email, password, role, supermarket_id]
     );
   },
 

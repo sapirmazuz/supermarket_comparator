@@ -22,23 +22,25 @@ const Navbar = () => {
 
       <div style={styles.links}>
         {/* קישור ללקוח */}
-        {user?.role === 'customer' && (
-          <>
-            <Link to="/products" style={styles.link}>מוצרים</Link>
-            <Link to="/cart" style={styles.link}>העגלה שלי</Link>
-            <Link to="/compare" style={styles.link}>השוואה</Link>
-          </>
-        )}
+       {user?.role === 'client' && (
+        <>
+          <Link to="/products" style={styles.link}>מוצרים</Link>
+          <Link to="/compare" style={styles.link}>רשימת סופרים</Link>
+          <Link to="/cart" style={styles.link}>העגלה שלי</Link>
+        </>
+      )}
 
-        {/* קישור למנהל */}
-        {user?.role === 'manager' && (
-          <>
-            <Link to="/dashboard" style={styles.link}>ניהול מוצרים</Link>
-          </>
-        )}
+      {/* קישור למנהל */}
+      {user?.role === 'manager' && (
+        <>
+          <Link to="/products" style={styles.link}>מוצרים</Link>
+          <Link to="/compare" style={styles.link}>רשימת סופרים</Link>
+          <Link to="/dashboard" style={styles.link}>ניהול מוצרים</Link>
+        </>
+      )}
 
         {/* קישור כללי */}
-        <Link to="/comments" style={styles.link}>תגובות</Link>
+        {/* <Link to="/comments" style={styles.link}>תגובות</Link> */}
 
         {/* התחברות/התנתקות */}
         {user ? (

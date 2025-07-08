@@ -1,19 +1,42 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/usersModels');
+const Supermarket = require('../models/supermarketsModels');
 
-// הרשמה
 exports.register = async (req, res) => {
-  const { name, email, password, role } = req.body;
+  const { name, email, password, role, supermarketName } = req.body;
+
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
-    await User.create({ name, email, password: hashedPassword, role });
-    res.status(201).json({ message: 'User registered successfully' });
+    let supermarket_id = null;
+
+    if (role === 'manager') {
+      if (!supermarketName || supermarketName.trim() === '') {
+        return res.status(400).json({ error: 'שם סופרמרקט נדרש למנהלים' });
+      }
+
+      // יצירת סופרמרקט עם כתובת ריקה זמנית
+      const supermarketId = await Supermarket.create({ name: supermarketName, address: '' });
+      supermarket_id = supermarketId;
+
+    }
+
+    // יצירת המשתמש
+    await User.create({
+      name,
+      email,
+      password: hashedPassword,
+      role,
+      supermarket_id
+    });
+
+    res.status(201).json({ message: 'ההרשמה בוצעה בהצלחה' });
   } catch (err) {
     if (err.code === 'ER_DUP_ENTRY') {
       return res.status(400).json({ error: 'האימייל כבר קיים במערכת' });
     }
-    res.status(500).json({ error: err.message });
+    console.error('שגיאה בהרשמה:', err);
+    res.status(500).json({ error: 'שגיאה פנימית בשרת' });
   }
 };
 
@@ -33,7 +56,16 @@ exports.login = async (req, res) => {
       { expiresIn: '2h' }
     );
 
-    res.json({ token, user: { id: user.id, name: user.name, role: user.role } });
+     // ✅ מוסיפים גם את supermarket_id לתשובת ההתחברות
+    res.json({
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        role: user.role,
+        supermarket_id: user.supermarket_id || null
+      }
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

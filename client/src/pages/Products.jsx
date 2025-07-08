@@ -14,7 +14,6 @@ export default function Products() {
 
   const addToCart = (product) => {
     if (cart.find(item => item.id === product.id)) return; // למנוע כפילויות
-
     const updatedCart = [...cart, product];
     setCart(updatedCart);
     localStorage.setItem('cart', JSON.stringify(updatedCart));
