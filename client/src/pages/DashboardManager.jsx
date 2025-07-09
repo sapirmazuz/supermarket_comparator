@@ -23,8 +23,9 @@ export default function DashboardManager() {
   const fetchData = async () => {
     try {
       const [prodsRes, commentsRes] = await Promise.all([
-        api.get(`/products?supermarket_id=${user.id}`),
-        api.get(`/comments?supermarket_id=${user.id}`)
+       api.get(`/products?supermarket_id=${user.supermarket_id}`),
+       api.get(`/comments?supermarket_id=${user.supermarket_id}`)
+
       ]);
       setProducts(prodsRes.data);
       setComments(commentsRes.data);
@@ -41,11 +42,13 @@ export default function DashboardManager() {
     e.preventDefault();
     try {
       const newProduct = {
-      ...form,
-      quantity: Number(form.quantity),
-      price: Number(form.price)
-    };
-
+        ...form,
+        quantity: Number(form.quantity),
+        price: Number(form.price),
+        supermarket_id: user.supermarket_id  // ✅ זה חייב להיות כאן!
+      };
+      console.log('מוצר חדש שנשלח:', newProduct);
+      console.log("user.supermarket_id:", user.supermarket_id);
       await api.post('/products/add', newProduct);
       fetchData();
       setForm({ name: '', brand: '', quantity: 1, price: 0, status: 'available' });
@@ -53,6 +56,7 @@ export default function DashboardManager() {
       console.error('שגיאה בהוספת מוצר:', err);
     }
   };
+
 
   return (
     <div>

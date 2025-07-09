@@ -11,8 +11,9 @@ const Supermarket = {
       'INSERT INTO Supermarkets (name, address) VALUES (?, ?)',
       [name, address]
     );
-    return result.insertId;
+    return result; // ← מחזירים את כל האובייקט
   }
+
 };
 
 module.exports = Supermarket;

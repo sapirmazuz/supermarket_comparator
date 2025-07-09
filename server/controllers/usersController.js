@@ -4,7 +4,7 @@ const User = require('../models/usersModels');
 const Supermarket = require('../models/supermarketsModels');
 
 exports.register = async (req, res) => {
-  const { name, email, password, role, supermarketName } = req.body;
+  const { name, email, password, role, supermarketName, supermarketAddress} = req.body;
 
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -16,8 +16,9 @@ exports.register = async (req, res) => {
       }
 
       // יצירת סופרמרקט עם כתובת ריקה זמנית
-      const supermarketId = await Supermarket.create({ name: supermarketName, address: '' });
-      supermarket_id = supermarketId;
+      const result = await Supermarket.create({ name: supermarketName, address: supermarketAddress });
+      console.log('supermarketId:', result.insertId);
+      supermarket_id = result.insertId;
 
     }
 

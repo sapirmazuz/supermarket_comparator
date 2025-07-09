@@ -6,6 +6,8 @@ import Cart from './pages/Cart';
 import Compare from './pages/Compare';
 import DashboardManager from './pages/DashboardManager';
 import Navbar from './components/Navbar'; // 👉 ייבוא ה־Navbar
+import React, { useEffect, useState } from 'react';
+
 
 // קומפוננטת עטיפה שמציגה את ה־Navbar בכל העמודים למעט login/register
 function LayoutWithNavbar({ children }) {
@@ -21,7 +23,18 @@ function LayoutWithNavbar({ children }) {
 }
 
 function App() {
-  const user = JSON.parse(localStorage.getItem('user'));
+const [user, setUser] = useState(null); // ⬅️ התחלה ריקה
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+    setLoading(false); // ⬅️ סיום טעינה
+  }, []);
+
+  if (loading) return null; // ⬅️ לא מרנדר כלום עד סיום
 
   return (
     <Router>
@@ -33,7 +46,10 @@ function App() {
           <Route path="/products" element={<Products />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/compare" element={<Compare />} />
-          <Route path="/dashboard" element={user?.role === 'manager' ? <DashboardManager /> : <Navigate to="/products" />} />
+          <Route
+            path="/dashboard"
+            element={user?.role === 'manager' ? <DashboardManager /> : <Navigate to="/products" />}
+          />
         </Routes>
       </LayoutWithNavbar>
     </Router>

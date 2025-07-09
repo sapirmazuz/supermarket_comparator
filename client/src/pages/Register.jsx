@@ -70,24 +70,29 @@ export default function Register() {
             <option value="manager">מנהל סופר</option>
           </select>
         </div>
-        <div>
-          <label>שם הסופרמרקט (למנהלים בלבד):</label>
-          <input
-            type="text"
-            value={supermarketName}
-            onChange={(e) => setSupermarketName(e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <label>כתובת הסופרמרקט (למנהלים בלבד):</label>
-          <input
-            type="text"
-            value={supermarketAddress}
-            onChange={(e) => setSupermarketAddress(e.target.value)}
-            required
-          />
-        </div>
+        {role === 'manager' && (
+        <>
+          <div>
+            <label>שם הסופרמרקט:</label>
+            <input
+              type="text"
+              value={supermarketName}
+              onChange={(e) => setSupermarketName(e.target.value)}
+              required={role === 'manager'}
+            />
+          </div>
+          <div>
+            <label>כתובת הסופרמרקט:</label>
+            <input
+              type="text"
+              value={supermarketAddress}
+              onChange={(e) => setSupermarketAddress(e.target.value)}
+              required={role === 'manager'}
+            />
+          </div>
+        </>
+      )}
+
         <button type="submit">הרשמה</button>
       </form>
       {error && <p style={{ color: 'red' }}>{error}</p>}
