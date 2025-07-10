@@ -1,3 +1,4 @@
+const db = require('../db');
 const Supermarket = require('../models/supermarketsModels');
 
 // שליפת כל הסופרים
@@ -20,3 +21,16 @@ exports.addSupermarket = async (req, res) => {
     res.status(500).json({ error: 'שגיאה בהוספת סופר' });
   }
 };
+
+exports.getByUserId = async (req, res) => {
+  try {
+    const supermarket = await Supermarket.getByUserId(req.params.userId);
+    if (!supermarket) {
+      return res.status(404).json({ error: 'סופרמרקט לא נמצא' });
+    }
+    res.json(supermarket);
+  } catch (err) {
+    res.status(500).json({ error: 'שגיאה בשליפת סופרמרקט לפי משתמש' });
+  }
+};
+

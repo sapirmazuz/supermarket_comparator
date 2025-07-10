@@ -16,22 +16,33 @@ exports.register = async (req, res) => {
       }
 
       // יצירת סופרמרקט עם כתובת ריקה זמנית
-      const result = await Supermarket.create({ name: supermarketName, address: supermarketAddress });
+      const result = await Supermarket.create({
+        name: supermarketName,
+        address: supermarketAddress,
+        user_id: null  // בהתחלה ריק
+      });
+
       console.log('supermarketId:', result.insertId);
       supermarket_id = result.insertId;
 
     }
 
     // יצירת המשתמש
-    await User.create({
-      name,
-      email,
-      password: hashedPassword,
-      role,
-      supermarket_id
-    });
+const [userResult] = await User.create({
+  name,
+  email,
+  password: hashedPassword,
+  role,
+  supermarket_id
+});
 
-    res.status(201).json({ message: 'ההרשמה בוצעה בהצלחה' });
+// עדכון הסופרמרקט עם user_id
+if (role === 'manager') {
+  await Supermarket.updateUserId(supermarket_id, userResult.insertId);
+}
+
+
+    res.status(201).json({ message: 'ההרשמה בוצעה בהצלחה', supermarket_id });
   } catch (err) {
     if (err.code === 'ER_DUP_ENTRY') {
       return res.status(400).json({ error: 'האימייל כבר קיים במערכת' });

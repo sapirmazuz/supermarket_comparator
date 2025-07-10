@@ -6,6 +6,7 @@ const User = {
       'INSERT INTO Users (name, email, password, role, supermarket_id) VALUES (?, ?, ?, ?, ?)',
       [name, email, password, role, supermarket_id]
     );
+    return result.insertId; // ✅ מחזיר את ה-id של המשתמש החדש
   },
 
   findByEmail: async (email) => {

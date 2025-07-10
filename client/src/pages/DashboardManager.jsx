@@ -5,6 +5,8 @@ import { getUser } from '../services/auth';
 export default function DashboardManager() {
   const [products, setProducts] = useState([]);
   const [comments, setComments] = useState([]);
+  const [supermarketId, setSupermarketId] = useState(null);
+
 
   const [form, setForm] = useState({
     name: '',
@@ -16,15 +18,32 @@ export default function DashboardManager() {
 
   const user = getUser();
 
+   // שליפה של supermarket_id מהשרת
   useEffect(() => {
-    fetchData();
-  }, []);
+  const fetchSupermarketId = async () => {
+    try {
+      const res = await api.get(`/supermarkets/user/${user.id}`);
+      setSupermarketId(res.data.id);
+    } catch (err) {
+      console.error('שגיאה בשליפת הסופרמרקט:', err);
+    }
+  };
+
+  if (user?.id) fetchSupermarketId();
+}, [user]);
+
+  // שליפת מוצרים ותגובות רק לאחר שיש supermarket_id
+  useEffect(() => {
+    if (supermarketId) {
+      fetchData();
+    }
+  }, [supermarketId]);
 
   const fetchData = async () => {
     try {
       const [prodsRes, commentsRes] = await Promise.all([
-       api.get(`/products?supermarket_id=${user.supermarket_id}`),
-       api.get(`/comments?supermarket_id=${user.supermarket_id}`)
+       api.get(`/products?supermarket_id=${supermarketId}`),
+       api.get(`/comments?supermarket_id=${supermarketId}`)
 
       ]);
       setProducts(prodsRes.data);
@@ -45,10 +64,10 @@ export default function DashboardManager() {
         ...form,
         quantity: Number(form.quantity),
         price: Number(form.price),
-        supermarket_id: user.supermarket_id  // ✅ זה חייב להיות כאן!
+        supermarket_id: supermarketId  // ✅ זה חייב להיות כאן!
       };
       console.log('מוצר חדש שנשלח:', newProduct);
-      console.log("user.supermarket_id:", user.supermarket_id);
+      console.log("user.supermarket_id:", supermarketId);
       await api.post('/products/add', newProduct);
       fetchData();
       setForm({ name: '', brand: '', quantity: 1, price: 0, status: 'available' });
