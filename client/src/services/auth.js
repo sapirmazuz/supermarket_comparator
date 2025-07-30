@@ -1,3 +1,5 @@
+// ניהול JWT/token ב־localStorage, התחברות/התנתקות מהשרת.
+
 export const login = (user, token) => {
   localStorage.setItem('user', JSON.stringify(user));
   localStorage.setItem('token', token);

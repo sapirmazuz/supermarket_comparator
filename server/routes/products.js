@@ -1,3 +1,5 @@
+// נתיבים לניהול מוצרים – מוגנים לפי תפקיד.
+
 const express = require('express');
 const router = express.Router();
 const productsController = require('../controllers/productsController');

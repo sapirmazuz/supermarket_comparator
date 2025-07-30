@@ -1,3 +1,5 @@
+// עגלת הקניות של הלקוח עם אפשרות הגדרת העדפות.
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';

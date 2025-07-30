@@ -1,3 +1,5 @@
+// בודק JWT ומחלץ פרטי המשתמש לבקשות מוגנות.
+
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 

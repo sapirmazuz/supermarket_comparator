@@ -1,3 +1,5 @@
+//  יצירת, עריכת, מחיקת מוצרים. מנהל יכול לערוך רק את המוצרים של הסופר שלו.
+
 const db = require('../db');
 const Product = require('../models/productsModels');
 
@@ -6,9 +8,16 @@ exports.addProduct = async (req, res) => {
   const { name, brand, quantity, price, status } = req.body;
   const userId = req.user?.id;
 
-  if (!name || !brand || !quantity || !price || !status) {
+  if (
+    name == null ||
+    brand == null ||
+    quantity == null ||
+    price == null ||
+    status == null
+  ) {
     return res.status(400).json({ error: 'Missing product fields' });
   }
+
 
   try {
     // שליפת ה־supermarket_id של המנהל

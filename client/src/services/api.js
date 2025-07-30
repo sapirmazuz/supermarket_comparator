@@ -1,3 +1,5 @@
+//  מכיל קריאות fetch/axios לשרת: מוצרים, משתמשים, השוואה, תגובות.
+
 import axios from 'axios';
 
 const api = axios.create({

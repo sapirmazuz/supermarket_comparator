@@ -1,3 +1,5 @@
+// מציג תגובות למוצר/סופרמרקט, אולי גם מאפשר העלאת תמונה.
+
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 

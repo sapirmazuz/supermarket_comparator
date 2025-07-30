@@ -1,3 +1,5 @@
+// יצירת סופר חדש (בעת הרשמה של מנהל), שליפת נתוני כתובת, קישור למשתמש.
+
 const db = require('../db');
 const Supermarket = require('../models/supermarketsModels');
 

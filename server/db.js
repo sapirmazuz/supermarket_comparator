@@ -1,3 +1,5 @@
+// הגדרת החיבור למסד הנתונים MySQL באמצעות pool.
+
 const mysql = require('mysql2/promise');
 require('dotenv').config();
 

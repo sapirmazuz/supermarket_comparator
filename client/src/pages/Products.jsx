@@ -1,3 +1,5 @@
+// עמוד לצפייה או עריכה של רשימת המוצרים (לפי תפקיד).
+
 import React, { useEffect, useState } from 'react';
 import api from '../services/api';
 import ProductCard from '../components/ProductCard';

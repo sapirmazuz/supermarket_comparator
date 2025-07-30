@@ -1,3 +1,5 @@
+// נתיבים לניהול סופרים – בעיקר למנהל.
+
 const express = require('express');
 const router = express.Router();
 const supermarketsController = require('../controllers/supermarketsController');

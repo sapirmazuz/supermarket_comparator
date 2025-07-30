@@ -1,3 +1,5 @@
+// שאילתות לתגובות: insert, select by supermarket.
+
 const db = require('../db');
 
 const Comment = {

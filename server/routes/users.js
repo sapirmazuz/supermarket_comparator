@@ -1,3 +1,5 @@
+// התחברות, הרשמה, אימות, שליפת משתמשים לפי תפקיד.
+
 const express = require('express');
 const router = express.Router();
 const { register, login } = require('../controllers/usersController');

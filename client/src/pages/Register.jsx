@@ -1,3 +1,5 @@
+// עמוד הרשמה (כולל בחירת תפקיד – מנהל או לקוח).
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';

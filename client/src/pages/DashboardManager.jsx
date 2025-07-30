@@ -1,3 +1,5 @@
+//  דשבורד למנהל סופר: מאפשר לערוך את המוצרים שלו ולראות מחירים של אחרים.
+
 import React, { useEffect, useState } from 'react';
 import api from '../services/api';
 import { getUser } from '../services/auth';
@@ -66,6 +68,7 @@ export default function DashboardManager() {
         price: Number(form.price),
         supermarket_id: supermarketId  // ✅ זה חייב להיות כאן!
       };
+      console.log('📦 נתונים להוספה:', newProduct);
       console.log('מוצר חדש שנשלח:', newProduct);
       console.log("user.supermarket_id:", supermarketId);
       await api.post('/products/add', newProduct);

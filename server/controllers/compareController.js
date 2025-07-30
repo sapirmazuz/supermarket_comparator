@@ -1,3 +1,5 @@
+// מחשב מהו הסופר הכי משתלם לפי עגלת הקניות והעדפות המשתמש. מחזיר גם מחירים חסרים ומיקום.
+
 const db = require('../db');
 
 exports.compareSupermarkets = async (req, res) => {

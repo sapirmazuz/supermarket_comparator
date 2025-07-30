@@ -4,53 +4,54 @@ const User = require('../models/usersModels');
 const Supermarket = require('../models/supermarketsModels');
 
 exports.register = async (req, res) => {
-  const { name, email, password, role, supermarketName, supermarketAddress} = req.body;
+  const { name, email, password, role, supermarketName, supermarketAddress } = req.body;
 
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
     let supermarket_id = null;
 
+    // אם מדובר במנהל – צור סופרמרקט חדש
     if (role === 'manager') {
       if (!supermarketName || supermarketName.trim() === '') {
         return res.status(400).json({ error: 'שם סופרמרקט נדרש למנהלים' });
       }
 
-      // יצירת סופרמרקט עם כתובת ריקה זמנית
       const result = await Supermarket.create({
         name: supermarketName,
         address: supermarketAddress,
-        user_id: null  // בהתחלה ריק
+        user_id: null
       });
 
-      console.log('supermarketId:', result.insertId);
       supermarket_id = result.insertId;
+      console.log('📦 supermarket_id שנוצר:', supermarket_id);
+    }
+
+    // צור משתמש
+     const user_id = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+      role,
+      supermarket_id
+    });
+    console.log('👤 user_id שנוצר:', user_id);
+    // עדכון user_id בטבלת הסופרמרקט
+    if (supermarket_id) {
+      await Supermarket.updateUserId(supermarket_id, user_id);
+      console.log('🟢 עודכנתי את user_id של הסופרמרקט:', supermarket_id, '->', user_id);
 
     }
 
-    // יצירת המשתמש
-const [userResult] = await User.create({
-  name,
-  email,
-  password: hashedPassword,
-  role,
-  supermarket_id
-});
-
-// עדכון הסופרמרקט עם user_id
-if (role === 'manager') {
-  await Supermarket.updateUserId(supermarket_id, userResult.insertId);
-}
-
-
-    res.status(201).json({ message: 'ההרשמה בוצעה בהצלחה', supermarket_id });
+    res.status(201).json({ message: 'ההרשמה בוצעה בהצלחה', supermarket_id, user_id });
   } catch (err) {
+    console.error('❌ שגיאה בהרשמה:', err);
     if (err.code === 'ER_DUP_ENTRY') {
       return res.status(400).json({ error: 'האימייל כבר קיים במערכת' });
     }
-    console.error('שגיאה בהרשמה:', err);
     res.status(500).json({ error: 'שגיאה פנימית בשרת' });
   }
 };
+
 
 // התחברות
 exports.login = async (req, res) => {
@@ -68,7 +69,6 @@ exports.login = async (req, res) => {
       { expiresIn: '2h' }
     );
 
-     // ✅ מוסיפים גם את supermarket_id לתשובת ההתחברות
     res.json({
       token,
       user: {

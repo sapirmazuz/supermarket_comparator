@@ -1,3 +1,5 @@
+//  רכיב השורש הראשי; מגדיר נתיבים (<Routes>) ומבנה בסיסי של
+
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Login from './pages/Login';
 import Register from './pages/Register';

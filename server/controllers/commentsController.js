@@ -1,3 +1,5 @@
+// טיפול בתגובות: יצירה, שליפה לפי סופר, הוספת תמונות.
+
 const Comment = require('../models/commentsModels');
 
 exports.getAllComments = async (req, res) => {

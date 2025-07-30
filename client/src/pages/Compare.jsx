@@ -1,3 +1,5 @@
+// מציג את תוצאות ההשוואה – סופר משתלם, פריטים חסרים, מחירים.
+
 import React, { useEffect, useState } from 'react';
 import api from '../services/api';
 import MapView from '../components/MapView';
