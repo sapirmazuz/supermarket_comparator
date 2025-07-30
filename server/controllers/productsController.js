@@ -1,70 +1,91 @@
-//  יצירת, עריכת, מחיקת מוצרים. מנהל יכול לערוך רק את המוצרים של הסופר שלו.
-
 const db = require('../db');
-const Product = require('../models/productsModels');
 
-// הוספת מוצר חדש (למנהלים בלבד)
-exports.addProduct = async (req, res) => {
-  const { name, brand, quantity, price, status } = req.body;
-  const userId = req.user?.id;
+// הוספת מוצר לקטלוג הראשי (admin בלבד)
+exports.createCatalogProduct = async (req, res) => {
+  const { name, brand, quantity } = req.body;
 
-  if (
-    name == null ||
-    brand == null ||
-    quantity == null ||
-    price == null ||
-    status == null
-  ) {
-    return res.status(400).json({ error: 'Missing product fields' });
+  if (!name || !brand || !quantity) {
+    return res.status(400).json({ error: 'Missing fields' });
   }
 
+  try {
+    const [result] = await db.query(
+      'INSERT INTO Products (name, brand, quantity) VALUES (?, ?, ?)',
+      [name, brand, quantity]
+    );
+
+    res.status(201).json({ id: result.insertId });
+  } catch (err) {
+    console.error('DB Error:', err);
+    res.status(500).json({ error: 'Failed to create product' });
+  }
+};
+
+// שיוך מוצר קיים לסופר ספציפי עם מחיר וזמינות
+exports.addProductToSupermarket = async (req, res) => {
+  const { product_id, price, status } = req.body;
+  const userId = req.user?.id;
+
+  if (!product_id || !price || !status) {
+    return res.status(400).json({ error: 'Missing product assignment fields' });
+  }
 
   try {
-    // שליפת ה־supermarket_id של המנהל
     const [users] = await db.query(
       'SELECT supermarket_id FROM Users WHERE id = ? AND role = "manager"',
       [userId]
     );
 
     if (users.length === 0) {
-      return res.status(403).json({ error: 'רק מנהל יכול להוסיף מוצרים' });
+      return res.status(403).json({ error: 'רק מנהל יכול לשייך מוצרים' });
     }
 
     const supermarket_id = users[0].supermarket_id;
 
-    if (!supermarket_id) {
-      return res.status(400).json({ error: 'למנהל זה לא משויך סופרמרקט' });
-    }
+    await db.query(
+      'INSERT INTO SupermarketProducts (supermarket_id, product_id, price, status) VALUES (?, ?, ?, ?)',
+      [supermarket_id, product_id, price, status]
+    );
 
-    // יצירת המוצר
-    const productId = await Product.create({
-      name,
-      brand,
-      quantity,
-      price,
-      supermarket_id,
-      status,
-    });
-
-    res.status(201).json({ message: 'Product added', product_id: productId });
+    res.status(201).json({ message: 'Product assigned to supermarket' });
   } catch (err) {
     console.error('DB Error:', err);
-    res.status(500).json({ error: 'Failed to add product' });
+    res.status(500).json({ error: 'Failed to assign product' });
   }
 };
 
-// שליפת כל המוצרים (לכולם)
+// שליפת הקטלוג המלא (לכולם)
 exports.getAllProducts = async (req, res) => {
   try {
-    const { supermarket_id } = req.query;
-
-    const products = supermarket_id
-      ? await Product.getBySupermarketId(supermarket_id)
-      : await Product.getAll();
-
+    const [products] = await db.query('SELECT * FROM Products');
     res.json(products);
   } catch (err) {
     console.error('DB Error:', err);
     res.status(500).json({ error: 'Failed to retrieve products' });
   }
 };
+
+// שליפת מוצרים זמינים בסופר מסוים (ללקוח)
+exports.getAvailableProductsForSupermarket = async (req, res) => {
+  const { supermarket_id } = req.query;
+
+  if (!supermarket_id) {
+    return res.status(400).json({ error: 'Missing supermarket_id' });
+  }
+
+  try {
+    const [rows] = await db.query(
+      `SELECT p.id, p.name, p.brand, p.quantity, sp.price, sp.status
+       FROM SupermarketProducts sp
+       JOIN Products p ON sp.product_id = p.id
+       WHERE sp.supermarket_id = ? AND sp.status = 'available'`,
+      [supermarket_id]
+    );
+
+    res.json(rows);
+  } catch (err) {
+    console.error('DB Error:', err);
+    res.status(500).json({ error: 'Failed to retrieve products' });
+  }
+};
+

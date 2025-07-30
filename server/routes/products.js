@@ -1,14 +1,10 @@
-// נתיבים לניהול מוצרים – מוגנים לפי תפקיד.
-
 const express = require('express');
 const router = express.Router();
-const productsController = require('../controllers/productsController');
-const { verifyToken, requireRole } = require('../middleware/auth');
+const controller = require('../controllers/productsController');
+const auth = require('../middleware/auth');
 
-// הוספת מוצר (למנהלים בלבד)
-router.post('/add', verifyToken, requireRole('manager'), productsController.addProduct);
-
-// שליפת כל המוצרים (פתוח לכולם)
-router.get('/', productsController.getAllProducts);
+router.get('/', controller.getAllProducts); // שליפת כל המוצרים בקטלוג
+router.post('/', auth, controller.createCatalogProduct); // יצירת מוצר חדש בקטלוג (admin בלבד)
+router.get('/supermarket', auth, controller.getProductsBySupermarket); // מוצרים לפי סופרמרקט
 
 module.exports = router;
