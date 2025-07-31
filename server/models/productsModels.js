@@ -1,28 +1,41 @@
-// שאילתות למוצרים לפי סופרמרקט, עדכון, מחיקה.
-
 const db = require('../db');
 
 const Product = {
-  create: async ({ name, brand, quantity, price, supermarket_id, status }) => {
-    const [result] = await db.query(
-      'INSERT INTO Products (name, brand, quantity, price, supermarket_id, status) VALUES (?, ?, ?, ?, ?, ?)',
-      [name, brand, quantity, price, supermarket_id, status]
-    );
-    return result.insertId;
-  },
-
+  // שליפת כל המוצרים בקטלוג הכללי
   getAll: async () => {
     const [products] = await db.query('SELECT * FROM Products');
     return products;
   },
 
-   // ✅ פונקציה חדשה: שליפת מוצרים לפי סופרמרקט
-  getBySupermarketId: async (supermarketId) => {
-    const [products] = await db.query(
-      'SELECT * FROM Products WHERE supermarket_id = ?',
-      [supermarketId]
+  // הוספת מוצר חדש לקטלוג הכללי
+  createCatalogProduct: async ({ name, brand, quantity }) => {
+    const [result] = await db.query(
+      'INSERT INTO Products (name, brand, quantity) VALUES (?, ?, ?)',
+      [name, brand, quantity]
     );
-    return products;
+    return result.insertId;
+  },
+
+  // שיוך מוצר קיים לסופר מסוים עם מחיר וזמינות
+  assignToSupermarket: async ({ supermarket_id, product_id, price, status }) => {
+    const [result] = await db.query(
+      `INSERT INTO SupermarketProducts (supermarket_id, product_id, price, status)
+       VALUES (?, ?, ?, ?)`,
+      [supermarket_id, product_id, price, status]
+    );
+    return result.insertId;
+  },
+
+  // שליפת מוצרים זמינים בסופר מסוים (ללקוח)
+  getAvailableBySupermarket: async (supermarket_id) => {
+    const [rows] = await db.query(
+      `SELECT p.id, p.name, p.brand, p.quantity, sp.price, sp.status
+       FROM SupermarketProducts sp
+       JOIN Products p ON sp.product_id = p.id
+       WHERE sp.supermarket_id = ? AND sp.status = 'available'`,
+      [supermarket_id]
+    );
+    return rows;
   }
 };
 

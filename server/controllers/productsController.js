@@ -25,6 +25,7 @@ exports.createCatalogProduct = async (req, res) => {
 exports.addProductToSupermarket = async (req, res) => {
   const { product_id, price, status } = req.body;
   const userId = req.user?.id;
+console.log('👤 משתמש:', req.user);
 
   if (!product_id || !price || !status) {
     return res.status(400).json({ error: 'Missing product assignment fields' });

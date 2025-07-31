@@ -27,8 +27,6 @@ export default function DashboardManager() {
         product_id,
         price,
         status
-      }, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       setMessage('✔️ המוצר שויך לסופר שלך בהצלחה');
     } catch (error) {

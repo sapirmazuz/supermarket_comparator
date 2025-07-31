@@ -12,6 +12,8 @@ function verifyToken(req, res, next) {
 
   jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
     if (err) return res.status(403).json({ error: 'Invalid token' });
+   
+  // console.log('🔒 decoded JWT user:', user);
     req.user = user; // מוסיף את המשתמש לבקשה
     next();
   });
@@ -20,6 +22,8 @@ function verifyToken(req, res, next) {
 // מאמת שהתפקיד תואם (למשל רק 'manager')
 function requireRole(role) {
   return (req, res, next) => {
+    
+  console.log('🔍 checking role:', req.user?.role);
     if (!req.user || req.user.role !== role) {
       return res.status(403).json({ error: 'Access denied' });
     }
