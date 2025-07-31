@@ -15,6 +15,7 @@ export default function DashboardManager() {
       .catch(() => setMessage('שגיאה בטעינת הקטלוג'));
   }, []);
 
+
   const handleAssignProduct = async (product_id) => {
     const { price, status } = assignments[product_id] || {};
     if (!price || !status) {
@@ -32,11 +33,13 @@ export default function DashboardManager() {
     } catch (error) {
       setMessage('❌ שגיאה בשיוך המוצר');
     }
+
   };
 
   return (
     <div className="p-4">
       <h2>🛒 שיוך מוצרים לסופר שלך</h2>
+      
       {catalog.map(prod => (
         <div key={prod.id} style={{ border: '1px solid #ccc', padding: '10px', marginBottom: '10px' }}>
           <b>{prod.name}</b> | {prod.brand} | {prod.quantity}
@@ -65,6 +68,7 @@ export default function DashboardManager() {
             <button onClick={() => handleAssignProduct(prod.id)}>שייך לסופר</button>
           </div>
         </div>
+        
       ))}
       {message && <p style={{ color: 'green' }}>{message}</p>}
     </div>
