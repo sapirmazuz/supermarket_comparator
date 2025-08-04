@@ -2,34 +2,25 @@ import React, { useEffect, useState } from 'react';
 import api from '../services/api';
 import { getUser } from '../services/auth';
 
-export default function CommentSection({ productId, onClose }) {
+export default function CommentSection({ product, onClose }) {
   const [comments, setComments] = useState([]);
   const [text, setText] = useState('');
   const [file, setFile] = useState(null);
-  const [productDetails, setProductDetails] = useState(null);
   const user = getUser();
   const isCustomer = user?.role === 'customer';
 
   useEffect(() => {
-    fetchComments();
-    fetchProductDetails();
-  }, [productId]);
+    if (product?.id) {
+      fetchComments();
+    }
+  }, [product?.id]);
 
   const fetchComments = async () => {
     try {
-      const res = await api.get(`/comments?product_id=${productId}`);
+      const res = await api.get(`/comments?product_id=${product.id}`);
       setComments(res.data);
     } catch (err) {
       console.error('❌ שגיאה בשליפת תגובות:', err);
-    }
-  };
-
-  const fetchProductDetails = async () => {
-    try {
-      const res = await api.get(`/products/${productId}`);
-      setProductDetails(res.data);
-    } catch (err) {
-      console.error('❌ שגיאה בשליפת פרטי מוצר:', err);
     }
   };
 
@@ -39,7 +30,7 @@ export default function CommentSection({ productId, onClose }) {
     const formData = new FormData();
     formData.append('comment', text);
     formData.append('image', file);
-    formData.append('product_id', productId);
+    formData.append('product_id', product.id);
 
     try {
       await api.post('/comments', formData, {
@@ -56,6 +47,21 @@ export default function CommentSection({ productId, onClose }) {
     }
   };
 
+  const handleDelete = async (commentId) => {
+    try {
+      await api.delete(`/comments/${commentId}`, {
+        headers: {
+          Authorization: `Bearer ${user?.token}`
+        }
+      });
+      fetchComments();
+    } catch (err) {
+      console.error('❌ שגיאה במחיקת תגובה:', err);
+    }
+  };
+
+  if (!product) return null; // לא מציג את המודאל אם אין מוצר
+
   return (
     <div style={{
       background: 'rgba(0,0,0,0.6)',
@@ -68,14 +74,17 @@ export default function CommentSection({ productId, onClose }) {
       justifyContent: 'center',
       alignItems: 'center'
     }}>
-      <div style={{ background: 'white', padding: 20, maxWidth: 500, width: '90%', borderRadius: 10 }}>
-        <button onClick={onClose} style={{ float: 'right' }}>❌</button>
+      <div style={{
+        background: 'white',
+        padding: 20,
+        maxWidth: 500,
+        width: '90%',
+        borderRadius: 10,
+        position: 'relative'
+      }}>
+        <button onClick={onClose} style={{ position: 'absolute', top: 10, right: 10 }}>❌</button>
         <h3>
-          💬 תגובות למוצר: {
-            productDetails
-              ? `${productDetails.name} • ${productDetails.brand} • ${productDetails.quantity}`
-              : `#${productId}`
-          }
+          💬 תגובות למוצר: {product?.name || 'לא ידוע'} • {product?.brand || ''} • {product?.quantity || ''}
         </h3>
 
         <div style={{ maxHeight: 300, overflowY: 'auto', marginTop: 10 }}>
@@ -91,6 +100,14 @@ export default function CommentSection({ productId, onClose }) {
                     alt="comment"
                     style={{ maxWidth: '100%', maxHeight: 200 }}
                   />
+                )}
+                {user && c.user_id === user.id && (
+                  <button
+                    onClick={() => handleDelete(c.id)}
+                    style={{ color: 'red', marginTop: 5 }}
+                  >
+                    🗑️ מחק
+                  </button>
                 )}
               </div>
             ))

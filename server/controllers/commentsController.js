@@ -24,10 +24,29 @@ exports.createComment = async (req, res) => {
   }
 };
 
-// שליפת כל התגובות – ללקוח
 exports.getAllComments = async (req, res) => {
+  const user_id = req.user?.id;
+  const role = req.user?.role;
+  const product_id = req.query.product_id;
+
+  if (!product_id) {
+    return res.status(400).json({ error: 'חסר product_id' });
+  }
+
   try {
-    const comments = await commentModel.getAllComments();
+    if (role === 'manager') {
+      const supermarket_id = await commentModel.getManagerSupermarketId(user_id);
+
+      if (!supermarket_id) {
+        return res.status(403).json({ error: '⛔ אין סופרמרקט משויך למנהל הזה' });
+      }
+
+      const comments = await commentModel.getCommentsBySupermarketAndProduct(supermarket_id, product_id);
+      return res.json(comments);
+    }
+
+    // לקוח – מחזיר את כל התגובות על המוצר
+    const comments = await commentModel.getAllCommentsByProduct(product_id);
     res.json(comments);
   } catch (err) {
     console.error('❌ שגיאה בשליפת תגובות:', err);
@@ -35,21 +54,27 @@ exports.getAllComments = async (req, res) => {
   }
 };
 
-// שליפת תגובות לסופר של מנהל
-exports.getManagerComments = async (req, res) => {
-  const user_id = req.user?.id;
+
+// מחיקת תגובה לפי ID רק אם היא שייכת למשתמש
+exports.deleteComment = async (req, res) => {
+  const commentId = req.params.id;
+  const userId = req.user?.id;
 
   try {
-    const supermarket_id = await commentModel.getManagerSupermarketId(user_id);
+    const comment = await commentModel.getCommentById(commentId);
 
-    if (!supermarket_id) {
-      return res.status(403).json({ error: '⛔ אין סופרמרקט משויך למנהל הזה' });
+    if (!comment) {
+      return res.status(404).json({ error: 'תגובה לא נמצאה' });
     }
 
-    const comments = await commentModel.getCommentsBySupermarket(supermarket_id);
-    res.json(comments);
+    if (comment.user_id !== userId) {
+      return res.status(403).json({ error: 'אין הרשאה למחוק תגובה זו' });
+    }
+
+    await commentModel.deleteCommentById(commentId);
+    res.json({ message: '🗑️ תגובה נמחקה בהצלחה' });
   } catch (err) {
-    console.error('❌ שגיאה בשליפת תגובות למנהל:', err);
-    res.status(500).json({ error: 'שגיאה בשליפת תגובות' });
+    console.error('❌ שגיאה במחיקת תגובה:', err);
+    res.status(500).json({ error: 'שגיאה במחיקת תגובה' });
   }
 };

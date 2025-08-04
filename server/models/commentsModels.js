@@ -9,16 +9,15 @@ exports.insertComment = async (user_id, product_id, supermarket_id, text, image_
   );
 };
 
-// שליפת כל התגובות (ללקוחות)
-exports.getAllComments = async () => {
-  const [comments] = await db.query(
-    `SELECT Comments.*, Products.name AS product_name, Users.username
-     FROM Comments
-     JOIN Products ON Comments.product_id = Products.id
-     JOIN Users ON Comments.user_id = Users.id
-     ORDER BY Comments.created_at DESC`
-  );
-  return comments;
+// שליפת תגובה בודדת לפי ID
+exports.getCommentById = async (id) => {
+  const [rows] = await db.query('SELECT * FROM Comments WHERE id = ?', [id]);
+  return rows[0];
+};
+
+// מחיקת תגובה לפי ID
+exports.deleteCommentById = async (id) => {
+  await db.query('DELETE FROM Comments WHERE id = ?', [id]);
 };
 
 // שליפת supermarket_id של מנהל לפי user_id
@@ -39,16 +38,28 @@ exports.getCustomerSupermarketId = async (user_id) => {
   return result?.supermarket_id || null;
 };
 
-// שליפת תגובות לפי סופרמרקט (למנהל)
-exports.getCommentsBySupermarket = async (supermarket_id) => {
+// ❗ חדש: שליפת תגובות לפי product_id – ללקוחות
+exports.getAllCommentsByProduct = async (product_id) => {
   const [comments] = await db.query(
-    `SELECT Comments.*, Products.name AS product_name, Users.username
+    `SELECT Comments.*, Users.username
      FROM Comments
-     JOIN Products ON Comments.product_id = Products.id
      JOIN Users ON Comments.user_id = Users.id
-     WHERE Comments.supermarket_id = ?
+     WHERE Comments.product_id = ?
      ORDER BY Comments.created_at DESC`,
-    [supermarket_id]
+    [product_id]
+  );
+  return comments;
+};
+
+// ❗ חדש: שליפת תגובות לפי supermarket_id ו־product_id – למנהלים
+exports.getCommentsBySupermarketAndProduct = async (supermarket_id, product_id) => {
+  const [comments] = await db.query(
+    `SELECT Comments.*, Users.username
+     FROM Comments
+     JOIN Users ON Comments.user_id = Users.id
+     WHERE Comments.supermarket_id = ? AND Comments.product_id = ?
+     ORDER BY Comments.created_at DESC`,
+    [supermarket_id, product_id]
   );
   return comments;
 };

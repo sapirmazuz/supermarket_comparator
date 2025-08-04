@@ -48,10 +48,10 @@ const [user, setUser] = useState(null); // ⬅️ התחלה ריקה
           <Route path="/products" element={<Products />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/compare" element={<Compare />} />
-          {/* <Route
+          <Route
             path="/dashboard"
             element={user?.role === 'manager' ? <DashboardManager /> : <Navigate to="/products" />}
-          /> */}
+          />
         </Routes>
       </LayoutWithNavbar>
     </Router>

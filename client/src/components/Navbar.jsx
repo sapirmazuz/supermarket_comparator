@@ -23,26 +23,24 @@ const Navbar = () => {
       <h2 style={styles.logo}>השוואת סופרמרקטים</h2>
 
       <div style={styles.links}>
-        {/* קישור ללקוח */}
-       {user?.role === 'client' && (
-        <>
-          <Link to="/products" style={styles.link}>מוצרים</Link>
-          <Link to="/compare" style={styles.link}>רשימת סופרים</Link>
-          <Link to="/cart" style={styles.link}>העגלה שלי</Link>
-        </>
-      )}
+        {/* ניווט ללקוחות */}
+        {user?.role === 'client' && (
+          <>
+            <Link to="/products" style={styles.link}>מוצרים</Link>
+            <Link to="/compare" style={styles.link}>רשימת סופרים</Link>
+            <Link to="/cart" style={styles.link}>העגלה שלי</Link>
+          </>
+        )}
 
-      {/* קישור למנהל */}
-      {user?.role === 'manager' && (
-        <>
-          <Link to="/products" style={styles.link}>מוצרים</Link>
-          <Link to="/compare" style={styles.link}>רשימת סופרים</Link>
-          <Link to="/dashboard" style={styles.link}>ניהול מוצרים</Link>
-        </>
-      )}
-
-        {/* קישור כללי */}
-        {/* <Link to="/comments" style={styles.link}>תגובות</Link> */}
+        {/* ניווט למנהלים */}
+        {user?.role === 'manager' && (
+          <>
+            {/* <Link to="/products" style={styles.link}>מוצרים</Link> */}
+            <Link to="/compare" style={styles.link}>רשימת סופרים</Link>
+            <Link to="/dashboard?view=assign" style={styles.link}>שיוך מוצרים</Link>
+            <Link to="/dashboard?view=manage" style={styles.link}>ניהול המוצרים שלי</Link>
+          </>
+        )}
 
         {/* התחברות/התנתקות */}
         {user ? (
