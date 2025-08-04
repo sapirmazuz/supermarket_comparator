@@ -26,9 +26,9 @@ const Navbar = () => {
         {/* ניווט ללקוחות */}
         {user?.role === 'client' && (
           <>
-            <Link to="/products" style={styles.link}>מוצרים</Link>
             <Link to="/compare" style={styles.link}>רשימת סופרים</Link>
-            <Link to="/cart" style={styles.link}>העגלה שלי</Link>
+            <Link to="/products?view=catalog" style={styles.link}>מוצרים</Link>
+            <Link to="/products?view=cart" style={styles.link}>העגלה שלי</Link>
           </>
         )}
 

@@ -3,19 +3,23 @@ const commentModel = require('../models/commentsModels');
 // יצירת תגובה חדשה (רק לקוח)
 exports.createComment = async (req, res) => {
   const user_id = req.user?.id;
-  const { product_id, text, image_url } = req.body;
+  const { product_id, text, supermarket_id } = req.body;
+  const image_url = req.file?.filename || null;
 
-  if (!product_id || !text) {
-    return res.status(400).json({ error: 'חסרים פרטי תגובה' });
+
+  console.log('🔍 קלט שהתקבל ביצירת תגובה:', {
+    user_id,
+    product_id,
+    text,
+    supermarket_id,
+    image_url
+  });
+
+  if (!product_id || !text || !supermarket_id) {
+    return res.status(400).json({ error: 'חסרים פרטי תגובה או סופרמרקט' });
   }
 
   try {
-    const supermarket_id = await commentModel.getCustomerSupermarketId(user_id);
-
-    if (!supermarket_id) {
-      return res.status(400).json({ error: 'לא ניתן לאתר את הסופר שבו נקנה המוצר' });
-    }
-
     await commentModel.insertComment(user_id, product_id, supermarket_id, text, image_url);
     res.status(201).json({ message: '✅ תגובה נוספה בהצלחה' });
   } catch (err) {
@@ -54,8 +58,6 @@ exports.getAllComments = async (req, res) => {
   }
 };
 
-
-// מחיקת תגובה לפי ID רק אם היא שייכת למשתמש
 exports.deleteComment = async (req, res) => {
   const commentId = req.params.id;
   const userId = req.user?.id;
@@ -78,3 +80,4 @@ exports.deleteComment = async (req, res) => {
     res.status(500).json({ error: 'שגיאה במחיקת תגובה' });
   }
 };
+

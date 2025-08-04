@@ -185,11 +185,24 @@ export default function DashboardManager() {
                 עדכן
               </button>
               <button
-                onClick={() => setSelectedProductId(prod.product_id)}
-                className="ml-2 text-blue-600 underline"
+                onClick={() => setSelectedProductId(
+                  selectedProductId === prod.product_id ? null : prod.product_id)}
               >
-                תגובות
-              </button>
+                {selectedProductId === prod.product_id ? 'סגור תגובות' : 'הצג תגובות'}
+                </button>
+
+                {selectedProductId === prod.product_id && (
+                  <CommentSection
+                    product={{
+                      id: prod.product_id,
+                      name: prod.name,
+                      brand: prod.brand,
+                      quantity: prod.quantity
+                    }}
+                    onClose={() => setSelectedProductId(null)}
+                  />
+                )}
+
               <button
                 onClick={() => deleteProduct(prod.product_id)}
                 className="ml-2 text-red-600 underline"
@@ -199,14 +212,6 @@ export default function DashboardManager() {
             </div>
           </div>
         ))}
-
-      {selectedProductId && (
-        <CommentSection
-          productId={selectedProductId}
-          onClose={() => setSelectedProductId(null)}
-        />
-      )}
-
       {message && <p className="mt-4 text-green-700">{message}</p>}
     </div>
   );

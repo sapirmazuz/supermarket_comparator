@@ -4,7 +4,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'r
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Products from './pages/Products';
-import Cart from './pages/Cart';
+// import Cart from './pages/Cart';
 import Compare from './pages/Compare';
 import DashboardManager from './pages/DashboardManager';
 import Navbar from './components/Navbar'; // 👉 ייבוא ה־Navbar
@@ -46,7 +46,7 @@ const [user, setUser] = useState(null); // ⬅️ התחלה ריקה
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/products" element={<Products />} />
-          <Route path="/cart" element={<Cart />} />
+          {/* <Route path="/cart" element={<Cart />} /> */}
           <Route path="/compare" element={<Compare />} />
           <Route
             path="/dashboard"

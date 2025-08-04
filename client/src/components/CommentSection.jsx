@@ -6,12 +6,15 @@ export default function CommentSection({ product, onClose }) {
   const [comments, setComments] = useState([]);
   const [text, setText] = useState('');
   const [file, setFile] = useState(null);
+  const [supermarkets, setSupermarkets] = useState([]);
+  const [selectedSupermarket, setSelectedSupermarket] = useState('');
   const user = getUser();
-  const isCustomer = user?.role === 'customer';
+  const isCustomer = user?.role === 'client';
 
   useEffect(() => {
     if (product?.id) {
       fetchComments();
+      if (isCustomer) fetchSupermarkets();
     }
   }, [product?.id]);
 
@@ -24,13 +27,23 @@ export default function CommentSection({ product, onClose }) {
     }
   };
 
+  const fetchSupermarkets = async () => {
+    try {
+      const res = await api.get('/supermarkets');
+      setSupermarkets(res.data);
+    } catch (err) {
+      console.error('❌ שגיאה בשליפת סופרים:', err);
+    }
+  };
+
   const handleSubmit = async () => {
-    if (!text && !file) return;
+    if (!text || !selectedSupermarket) return;
 
     const formData = new FormData();
-    formData.append('comment', text);
-    formData.append('image', file);
+    formData.append('text', text);
+    formData.append('image_url', file);
     formData.append('product_id', product.id);
+    formData.append('supermarket_id', selectedSupermarket);
 
     try {
       await api.post('/comments', formData, {
@@ -41,6 +54,7 @@ export default function CommentSection({ product, onClose }) {
       });
       setText('');
       setFile(null);
+      setSelectedSupermarket('');
       fetchComments();
     } catch (err) {
       console.error('❌ שגיאה בשליחת תגובה:', err);
@@ -60,7 +74,7 @@ export default function CommentSection({ product, onClose }) {
     }
   };
 
-  if (!product) return null; // לא מציג את המודאל אם אין מוצר
+  if (!product) return null;
 
   return (
     <div style={{
@@ -93,14 +107,15 @@ export default function CommentSection({ product, onClose }) {
           ) : (
             comments.map((c, idx) => (
               <div key={idx} style={{ border: '1px solid #ccc', padding: 8, marginBottom: 8 }}>
-                <p>{c.comment}</p>
-                {c.image && (
+                <p>{c.text}</p>
+                {c.image_url && (
                   <img
-                    src={`/uploads/${c.image}`}
+                    src={`http://localhost:5000/uploads/${c.image_url}`}
                     alt="comment"
                     style={{ maxWidth: '100%', maxHeight: 200 }}
                   />
                 )}
+
                 {user && c.user_id === user.id && (
                   <button
                     onClick={() => handleDelete(c.id)}
@@ -130,6 +145,16 @@ export default function CommentSection({ product, onClose }) {
               onChange={(e) => setFile(e.target.files[0])}
               style={{ marginTop: 5 }}
             />
+            <select
+              value={selectedSupermarket}
+              onChange={(e) => setSelectedSupermarket(e.target.value)}
+              style={{ marginTop: 10, width: '100%' }}
+            >
+              <option value="">בחר את הסופר ממנו קנית</option>
+              {supermarkets.map((s) => (
+                <option key={s.id} value={s.id}>{s.name}</option>
+              ))}
+            </select>
             <button onClick={handleSubmit} style={{ marginTop: 10 }}>
               שלח תגובה
             </button>
