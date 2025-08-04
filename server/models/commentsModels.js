@@ -1,35 +1,54 @@
-// שאילתות לתגובות: insert, select by supermarket.
-
 const db = require('../db');
 
-const Comment = {
-  getAll: async () => {
-    const [comments] = await db.query(`
-      SELECT Comments.*, Users.name AS user_name
-      FROM Comments
-      JOIN Users ON Comments.user_id = Users.id
-    `);
-    return comments;
-  },
-
-  // ✅ חדש: שליפת תגובות לפי סופרמרקט
-  getBySupermarketId: async (supermarketId) => {
-    const [comments] = await db.query(`
-      SELECT Comments.*, Users.name AS user_name
-      FROM Comments
-      JOIN Users ON Comments.user_id = Users.id
-      WHERE Comments.supermarket_id = ?
-    `, [supermarketId]);
-    return comments;
-  },
-
-  create: async ({ user_id, supermarket_id, content, image_url }) => {
-    const [result] = await db.query(
-      'INSERT INTO Comments (user_id, supermarket_id, content, image_url, created_at) VALUES (?, ?, ?, ?, NOW())',
-      [user_id, supermarket_id, content, image_url]
-    );
-    return result.insertId;
-  }
+// יצירת תגובה חדשה
+exports.insertComment = async (user_id, product_id, supermarket_id, text, image_url) => {
+  await db.query(
+    `INSERT INTO Comments (user_id, product_id, supermarket_id, text, image_url, created_at)
+     VALUES (?, ?, ?, ?, ?, NOW())`,
+    [user_id, product_id, supermarket_id, text, image_url || null]
+  );
 };
 
-module.exports = Comment;
+// שליפת כל התגובות (ללקוחות)
+exports.getAllComments = async () => {
+  const [comments] = await db.query(
+    `SELECT Comments.*, Products.name AS product_name, Users.username
+     FROM Comments
+     JOIN Products ON Comments.product_id = Products.id
+     JOIN Users ON Comments.user_id = Users.id
+     ORDER BY Comments.created_at DESC`
+  );
+  return comments;
+};
+
+// שליפת supermarket_id של מנהל לפי user_id
+exports.getManagerSupermarketId = async (user_id) => {
+  const [[result]] = await db.query(
+    'SELECT supermarket_id FROM Users WHERE id = ? AND role = "manager"',
+    [user_id]
+  );
+  return result?.supermarket_id || null;
+};
+
+// שליפת supermarket_id של לקוח לפי user_id
+exports.getCustomerSupermarketId = async (user_id) => {
+  const [[result]] = await db.query(
+    'SELECT supermarket_id FROM Users WHERE id = ?',
+    [user_id]
+  );
+  return result?.supermarket_id || null;
+};
+
+// שליפת תגובות לפי סופרמרקט (למנהל)
+exports.getCommentsBySupermarket = async (supermarket_id) => {
+  const [comments] = await db.query(
+    `SELECT Comments.*, Products.name AS product_name, Users.username
+     FROM Comments
+     JOIN Products ON Comments.product_id = Products.id
+     JOIN Users ON Comments.user_id = Users.id
+     WHERE Comments.supermarket_id = ?
+     ORDER BY Comments.created_at DESC`,
+    [supermarket_id]
+  );
+  return comments;
+};

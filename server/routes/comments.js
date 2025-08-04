@@ -1,10 +1,15 @@
-// נתיבים: POST תגובה, GET תגובות לסופר.
-
 const express = require('express');
 const router = express.Router();
-const commentsController = require('../controllers/commentsController');
+const controller = require('../controllers/commentsController');
+const { verifyToken, requireRole } = require('../middleware/auth');
 
-router.get('/', commentsController.getAllComments);
-router.post('/add', commentsController.addComment);
+// שליפת כל התגובות מכל הסופרים – ללקוחות
+router.get('/', verifyToken, requireRole('customer'), controller.getAllComments);
+
+// שליפת תגובות למוצרים בסופר של המנהל בלבד
+router.get('/manager', verifyToken, requireRole('manager'), controller.getManagerComments);
+
+// יצירת תגובה חדשה על מוצר – לקוחות בלבד
+router.post('/', verifyToken, requireRole('customer'), controller.createComment);
 
 module.exports = router;

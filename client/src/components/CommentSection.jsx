@@ -1,100 +1,124 @@
-// מציג תגובות למוצר/סופרמרקט, אולי גם מאפשר העלאת תמונה.
-
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import api from '../services/api';
+import { getUser } from '../services/auth';
 
-// קומפוננטה שמציגה את התגובות עבור סופר מסוים
-const CommentSection = ({ supermarketId, user }) => {
-  const [comments, setComments] = useState([]); // התגובות הקיימות
-  const [content, setContent] = useState('');   // תוכן התגובה החדשה
-  const [image, setImage] = useState(null);     // קובץ התמונה לתגובה
+export default function CommentSection({ productId, onClose }) {
+  const [comments, setComments] = useState([]);
+  const [text, setText] = useState('');
+  const [file, setFile] = useState(null);
+  const [productDetails, setProductDetails] = useState(null);
+  const user = getUser();
+  const isCustomer = user?.role === 'customer';
 
-  // טוען את כל התגובות מהשרת כשנטען הקומפוננט
   useEffect(() => {
-    if (supermarketId) {
-      fetchComments();
-    }
-  }, [supermarketId]);
+    fetchComments();
+    fetchProductDetails();
+  }, [productId]);
 
-  // מביא תגובות לפי supermarket_id
   const fetchComments = async () => {
     try {
-      const res = await axios.get(`/api/comments?supermarket_id=${supermarketId}`);
+      const res = await api.get(`/comments?product_id=${productId}`);
       setComments(res.data);
     } catch (err) {
-      console.error('שגיאה בשליפת תגובות:', err);
+      console.error('❌ שגיאה בשליפת תגובות:', err);
     }
   };
 
-  // שינוי קובץ התמונה
-  const handleImageChange = (e) => {
-    setImage(e.target.files[0]);
+  const fetchProductDetails = async () => {
+    try {
+      const res = await api.get(`/products/${productId}`);
+      setProductDetails(res.data);
+    } catch (err) {
+      console.error('❌ שגיאה בשליפת פרטי מוצר:', err);
+    }
   };
 
-  // שליחת תגובה חדשה לשרת
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const formData = new FormData();
-      formData.append('user_id', user.id); // מזהה המשתמש
-      formData.append('supermarket_id', supermarketId); // מזהה הסופר
-      formData.append('content', content); // תוכן הטקסט
-      if (image) {
-        formData.append('image', image); // קובץ תמונה אם נבחר
-      }
+  const handleSubmit = async () => {
+    if (!text && !file) return;
 
-      // שליחת הבקשה לשרת
-      await axios.post('/api/comments', formData, {
+    const formData = new FormData();
+    formData.append('comment', text);
+    formData.append('image', file);
+    formData.append('product_id', productId);
+
+    try {
+      await api.post('/comments', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
-        },
+          Authorization: `Bearer ${user?.token}`
+        }
       });
-
-      setContent('');
-      setImage(null);
-      fetchComments(); // רענון רשימת התגובות לאחר השליחה
+      setText('');
+      setFile(null);
+      fetchComments();
     } catch (err) {
-      console.error('שגיאה בהוספת תגובה:', err);
+      console.error('❌ שגיאה בשליחת תגובה:', err);
     }
   };
 
   return (
-    <div className="comment-section">
-      <h3>תגובות על הסופר</h3>
+    <div style={{
+      background: 'rgba(0,0,0,0.6)',
+      position: 'fixed',
+      top: 0, left: 0,
+      width: '100%',
+      height: '100%',
+      zIndex: 9999,
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center'
+    }}>
+      <div style={{ background: 'white', padding: 20, maxWidth: 500, width: '90%', borderRadius: 10 }}>
+        <button onClick={onClose} style={{ float: 'right' }}>❌</button>
+        <h3>
+          💬 תגובות למוצר: {
+            productDetails
+              ? `${productDetails.name} • ${productDetails.brand} • ${productDetails.quantity}`
+              : `#${productId}`
+          }
+        </h3>
 
-      {/* טופס לשליחת תגובה חדשה */}
-      {user && (
-        <form onSubmit={handleSubmit} className="comment-form">
-          <textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder="כתוב תגובה..."
-            required
-          />
-          <input type="file" accept="image/*" onChange={handleImageChange} />
-          <button type="submit">שלח תגובה</button>
-        </form>
-      )}
-
-      {/* הצגת כל התגובות */}
-      <ul className="comment-list">
-        {comments.map((comment) => (
-          <li key={comment.id}>
-            <strong>{comment.user_name}:</strong> {comment.content}
-            {comment.image_url && (
-              <div>
-                <img
-                  src={`/uploads/${comment.image_url}`}
-                  alt="תגובה"
-                  style={{ maxWidth: '200px', marginTop: '5px' }}
-                />
+        <div style={{ maxHeight: 300, overflowY: 'auto', marginTop: 10 }}>
+          {comments.length === 0 ? (
+            <p>אין תגובות עדיין.</p>
+          ) : (
+            comments.map((c, idx) => (
+              <div key={idx} style={{ border: '1px solid #ccc', padding: 8, marginBottom: 8 }}>
+                <p>{c.comment}</p>
+                {c.image && (
+                  <img
+                    src={`/uploads/${c.image}`}
+                    alt="comment"
+                    style={{ maxWidth: '100%', maxHeight: 200 }}
+                  />
+                )}
               </div>
-            )}
-          </li>
-        ))}
-      </ul>
+            ))
+          )}
+        </div>
+
+        {isCustomer && (
+          <>
+            <hr />
+            <textarea
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              placeholder="כתוב תגובה..."
+              rows={3}
+              style={{ width: '100%', marginTop: 10 }}
+            />
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => setFile(e.target.files[0])}
+              style={{ marginTop: 5 }}
+            />
+            <button onClick={handleSubmit} style={{ marginTop: 10 }}>
+              שלח תגובה
+            </button>
+          </>
+        )}
+      </div>
     </div>
   );
-};
-
-export default CommentSection;
+}

@@ -1,28 +1,55 @@
-// טיפול בתגובות: יצירה, שליפה לפי סופר, הוספת תמונות.
+const commentModel = require('../models/commentsModels');
 
-const Comment = require('../models/commentsModels');
+// יצירת תגובה חדשה (רק לקוח)
+exports.createComment = async (req, res) => {
+  const user_id = req.user?.id;
+  const { product_id, text, image_url } = req.body;
 
-exports.getAllComments = async (req, res) => {
-  const { supermarket_id } = req.query;
+  if (!product_id || !text) {
+    return res.status(400).json({ error: 'חסרים פרטי תגובה' });
+  }
 
   try {
-    const comments = supermarket_id
-      ? await Comment.getBySupermarketId(supermarket_id)
-      : await Comment.getAll();
+    const supermarket_id = await commentModel.getCustomerSupermarketId(user_id);
 
+    if (!supermarket_id) {
+      return res.status(400).json({ error: 'לא ניתן לאתר את הסופר שבו נקנה המוצר' });
+    }
+
+    await commentModel.insertComment(user_id, product_id, supermarket_id, text, image_url);
+    res.status(201).json({ message: '✅ תגובה נוספה בהצלחה' });
+  } catch (err) {
+    console.error('❌ שגיאה ביצירת תגובה:', err);
+    res.status(500).json({ error: 'שגיאה ביצירת תגובה' });
+  }
+};
+
+// שליפת כל התגובות – ללקוח
+exports.getAllComments = async (req, res) => {
+  try {
+    const comments = await commentModel.getAllComments();
     res.json(comments);
   } catch (err) {
+    console.error('❌ שגיאה בשליפת תגובות:', err);
     res.status(500).json({ error: 'שגיאה בשליפת תגובות' });
   }
 };
 
-// הוספת תגובה
-exports.addComment = async (req, res) => {
-  const { user_id, supermarket_id, content, image_url } = req.body;
+// שליפת תגובות לסופר של מנהל
+exports.getManagerComments = async (req, res) => {
+  const user_id = req.user?.id;
+
   try {
-    const commentId = await Comment.create({ user_id, supermarket_id, content, image_url });
-    res.status(201).json({ message: 'תגובה נוספה בהצלחה', comment_id: commentId });
+    const supermarket_id = await commentModel.getManagerSupermarketId(user_id);
+
+    if (!supermarket_id) {
+      return res.status(403).json({ error: '⛔ אין סופרמרקט משויך למנהל הזה' });
+    }
+
+    const comments = await commentModel.getCommentsBySupermarket(supermarket_id);
+    res.json(comments);
   } catch (err) {
-    res.status(500).json({ error: 'שגיאה בהוספת תגובה' });
+    console.error('❌ שגיאה בשליפת תגובות למנהל:', err);
+    res.status(500).json({ error: 'שגיאה בשליפת תגובות' });
   }
 };
