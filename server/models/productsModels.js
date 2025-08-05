@@ -36,6 +36,41 @@ const Product = {
       [supermarket_id]
     );
     return rows;
+  },
+
+    // הוספת מוצר לעגלה של לקוח
+  addToCart: async (user_id, product_id) => {
+    const [[existing]] = await db.query(
+      'SELECT * FROM Carts WHERE user_id = ? AND product_id = ?',
+      [user_id, product_id]
+    );
+
+    if (!existing) {
+      await db.query(
+        'INSERT INTO Carts (user_id, product_id) VALUES (?, ?)',
+        [user_id, product_id]
+      );
+    }
+  },
+
+  // שליפת כל העגלה של לקוח
+  getCart: async (user_id) => {
+    const [rows] = await db.query(
+      `SELECT p.id, p.name, p.brand, p.quantity
+       FROM Carts c
+       JOIN Products p ON c.product_id = p.id
+       WHERE c.user_id = ?`,
+      [user_id]
+    );
+    return rows;
+  },
+
+  // הסרת מוצר מהעגלה
+  removeFromCart: async (user_id, product_id) => {
+    await db.query(
+      'DELETE FROM Carts WHERE user_id = ? AND product_id = ?',
+      [user_id, product_id]
+    );
   }
 };
 

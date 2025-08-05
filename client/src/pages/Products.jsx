@@ -1,7 +1,6 @@
 // pages/Products.jsx
 
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 import { getUser } from '../services/auth';
 import api from '../services/api';
 import CommentSection from '../components/CommentSection';
@@ -20,33 +19,58 @@ export default function Products() {
 
 
   useEffect(() => {
-    fetchCatalog();
-    const storedCart = localStorage.getItem('cart');
-    if (storedCart) setCart(JSON.parse(storedCart));
+  fetchCatalog();
+  if (user?.role === 'client') {
+      fetchCartFromServer(); // ⬅️ שולף מהשרת
+    }
   }, []);
+
 
   const fetchCatalog = async () => {
     try {
-      const res = await axios.get('/api/products');
+      const res = await api.get('/products');
       setProducts(res.data);
     } catch (err) {
       console.error('Failed to load catalog:', err);
     }
   };
 
-  const addToCart = (product) => {
-    if (cart.find(p => p.id === product.id)) return;
-    const newCart = [...cart, product];
-    setCart(newCart);
-    localStorage.setItem('cart', JSON.stringify(newCart));
-    setMessage(`✔️ המוצר "${product.name}" נוסף לעגלה`);
+  const fetchCartFromServer = async () => {
+    try {
+      const res = await api.get('/products/cart');
+      setCart(res.data);
+    } catch (err) {
+      console.error('❌ שגיאה בשליפת עגלה:', err);
+    }
   };
 
-  const removeFromCart = (id) => {
-    const newCart = cart.filter(p => p.id !== id);
-    setCart(newCart);
-    localStorage.setItem('cart', JSON.stringify(newCart));
+
+  const addToCart = async (product) => {
+    if (cart.find(p => p.id === product.id)) return;
+
+    try {
+      await api.post('/products/cart/add', { product_id: product.id });
+      const newCart = [...cart, product];
+      setCart(newCart);
+      setTimeout(() => setMessage(''), 3000); // נקה אחרי 3 שניות
+    } catch (err) {
+      console.error('❌ שגיאה בהוספה לעגלה:', err);
+    }
   };
+
+
+  const removeFromCart = async (id) => {
+    try {
+      await api.delete('/products/cart/remove', {
+        data: { product_id: id }
+      });
+      const newCart = cart.filter(p => p.id !== id);
+      setCart(newCart);
+    } catch (err) {
+      console.error('❌ שגיאה בהסרה מהעגלה:', err);
+    }
+  };
+
 
   return (
   <div className="p-4">

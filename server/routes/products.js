@@ -19,4 +19,8 @@ router.get('/my', verifyToken, requireRole('manager'), controller.getMyProducts)
 router.put('/my/:product_id', verifyToken, requireRole('manager'), controller.updateAssignedProduct);
 router.delete('/my/:product_id', verifyToken, requireRole('manager'), controller.deleteAssignedProduct);
 
+router.post('/cart/add', verifyToken, requireRole('client'), controller.addToCart);
+router.get('/cart', verifyToken, requireRole('client'), controller.getCart);
+router.delete('/cart/remove', verifyToken, requireRole('client'), controller.removeFromCart);
+
 module.exports = router;

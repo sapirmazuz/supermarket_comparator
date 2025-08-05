@@ -21,15 +21,18 @@ export default function Login() {
       const res = await api.post('/users/login', { email, password });
       const { token, user } = res.data;
 
+      localStorage.removeItem('user');
+
       // שמירת התחברות
       saveLogin(user, token);
 
       // ניווט לפי role
       if (user.role === 'manager') {
-        navigate('/dashboard');
+        window.location.href = '/dashboard';
       } else {
-        navigate('/products');
+        window.location.href = '/products';
       }
+
     } catch (err) {
       setError(err.response?.data?.error || 'שגיאה בהתחברות');
     }

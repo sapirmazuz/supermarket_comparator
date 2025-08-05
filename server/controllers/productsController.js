@@ -1,4 +1,5 @@
 const db = require('../db');
+const Product = require('../models/productsModels');
 
 // הוספת מוצר לקטלוג הראשי (admin בלבד)
 exports.createCatalogProduct = async (req, res) => {
@@ -181,5 +182,50 @@ exports.deleteAssignedProduct = async (req, res) => {
   } catch (err) {
     console.error('❌ deleteAssignedProduct error:', err);
     res.status(500).json({ error: 'שגיאה במחיקת מוצר' });
+  }
+};
+
+// ✅ הוספת מוצר לעגלה
+exports.addToCart = async (req, res) => {
+  const user_id = req.user?.id;
+  const { product_id } = req.body;
+
+  if (!product_id) return res.status(400).json({ error: 'חסר product_id' });
+
+  try {
+    await Product.addToCart(user_id, product_id);
+    res.json({ message: '✔️ נוסף לעגלה' });
+  } catch (err) {
+    console.error('❌ addToCart:', err);
+    res.status(500).json({ error: 'שגיאה בהוספה לעגלה' });
+  }
+};
+
+// ✅ שליפת עגלה של הלקוח
+exports.getCart = async (req, res) => {
+  const user_id = req.user?.id;
+
+  try {
+    const cart = await Product.getCart(user_id);
+    res.json(cart);
+  } catch (err) {
+    console.error('❌ getCart:', err);
+    res.status(500).json({ error: 'שגיאה בשליפת עגלה' });
+  }
+};
+
+// ✅ הסרת מוצר מהעגלה
+exports.removeFromCart = async (req, res) => {
+  const user_id = req.user?.id;
+  const { product_id } = req.body;
+
+  if (!product_id) return res.status(400).json({ error: 'חסר product_id' });
+
+  try {
+    await Product.removeFromCart(user_id, product_id);
+    res.json({ message: '🗑️ הוסר מהעגלה' });
+  } catch (err) {
+    console.error('❌ removeFromCart:', err);
+    res.status(500).json({ error: 'שגיאה בהסרה מהעגלה' });
   }
 };
