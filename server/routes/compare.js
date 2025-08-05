@@ -1,9 +1,11 @@
-// נתיב POST /compare – שליחת סל מהלקוח, קבלת דירוג סופרים.
+// server/routes/compare.js
 
 const express = require('express');
 const router = express.Router();
-const compareController = require('../controllers/compareController');
+const controller = require('../controllers/compareController');
+const { verifyToken } = require('../middleware/auth');
 
-router.post('/', compareController.compareSupermarkets);
+// חישוב השוואה
+router.post('/', verifyToken, controller.compareSupermarkets);
 
 module.exports = router;

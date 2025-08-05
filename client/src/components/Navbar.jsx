@@ -35,8 +35,6 @@ const Navbar = () => {
         {/* ניווט למנהלים */}
         {user?.role === 'manager' && (
           <>
-            {/* <Link to="/products" style={styles.link}>מוצרים</Link> */}
-            <Link to="/compare" style={styles.link}>רשימת סופרים</Link>
             <Link to="/dashboard?view=assign" style={styles.link}>שיוך מוצרים</Link>
             <Link to="/dashboard?view=manage" style={styles.link}>ניהול המוצרים שלי</Link>
           </>

@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import api from '../services/api';
 import { getUser } from '../services/auth';
 import { useLocation } from 'react-router-dom';
-// import CommentSection from './CommentSection';
 import CommentSection from '../components/CommentSection';
 
 

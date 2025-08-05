@@ -17,7 +17,7 @@ app.use('/api/users', require('./routes/users'));
 app.use('/api/products', require('./routes/products'));
 app.use('/api/comments', require('./routes/comments'));
 app.use('/api/supermarkets', require('./routes/supermarkets'));
-app.use('/api/compare', compareRoutes);
+app.use('/api/compare', require('./routes/compare'));
 
 // Start server
 app.listen(PORT, () => {

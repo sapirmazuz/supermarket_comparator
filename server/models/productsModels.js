@@ -39,7 +39,7 @@ const Product = {
   },
 
     // הוספת מוצר לעגלה של לקוח
-  addToCart: async (user_id, product_id) => {
+  addToCart: async (user_id, product_id, quantity) => {
     const [[existing]] = await db.query(
       'SELECT * FROM Carts WHERE user_id = ? AND product_id = ?',
       [user_id, product_id]
@@ -47,23 +47,37 @@ const Product = {
 
     if (!existing) {
       await db.query(
-        'INSERT INTO Carts (user_id, product_id) VALUES (?, ?)',
-        [user_id, product_id]
+        'INSERT INTO Carts (user_id, product_id, quantity) VALUES (?, ?, ?)',
+        [user_id, product_id, quantity]
+      );
+    } else {
+      await db.query(
+        'UPDATE Carts SET quantity = quantity + ? WHERE user_id = ? AND product_id = ?',
+        [quantity, user_id, product_id]
       );
     }
   },
 
+
   // שליפת כל העגלה של לקוח
   getCart: async (user_id) => {
     const [rows] = await db.query(
-      `SELECT p.id, p.name, p.brand, p.quantity
-       FROM Carts c
-       JOIN Products p ON c.product_id = p.id
-       WHERE c.user_id = ?`,
+      `SELECT p.id, p.name, p.brand, p.quantity, c.quantity AS cart_quantity
+      FROM Carts c
+      JOIN Products p ON c.product_id = p.id
+      WHERE c.user_id = ?`,
       [user_id]
     );
-    return rows;
+
+    // מוודא שהשדה שאתה מחזיר הוא quantity
+    return rows.map(row => ({
+      id: row.id,
+      name: row.name,
+      brand: row.brand,
+      quantity: row.cart_quantity
+    }));
   },
+
 
   // הסרת מוצר מהעגלה
   removeFromCart: async (user_id, product_id) => {

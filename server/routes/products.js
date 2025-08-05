@@ -22,5 +22,7 @@ router.delete('/my/:product_id', verifyToken, requireRole('manager'), controller
 router.post('/cart/add', verifyToken, requireRole('client'), controller.addToCart);
 router.get('/cart', verifyToken, requireRole('client'), controller.getCart);
 router.delete('/cart/remove', verifyToken, requireRole('client'), controller.removeFromCart);
+router.put('/cart/update', verifyToken, controller.updateQuantity);
+router.delete('/cart/clear', verifyToken, controller.clearCart);
 
 module.exports = router;

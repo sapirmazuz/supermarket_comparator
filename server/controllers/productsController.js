@@ -188,18 +188,20 @@ exports.deleteAssignedProduct = async (req, res) => {
 // ✅ הוספת מוצר לעגלה
 exports.addToCart = async (req, res) => {
   const user_id = req.user?.id;
-  const { product_id } = req.body;
+  const { product_id, quantity } = req.body;
 
   if (!product_id) return res.status(400).json({ error: 'חסר product_id' });
 
   try {
-    await Product.addToCart(user_id, product_id);
+    const qty = quantity && quantity > 0 ? quantity : 1;
+    await Product.addToCart(user_id, product_id, qty);
     res.json({ message: '✔️ נוסף לעגלה' });
   } catch (err) {
     console.error('❌ addToCart:', err);
     res.status(500).json({ error: 'שגיאה בהוספה לעגלה' });
   }
 };
+
 
 // ✅ שליפת עגלה של הלקוח
 exports.getCart = async (req, res) => {
@@ -229,3 +231,35 @@ exports.removeFromCart = async (req, res) => {
     res.status(500).json({ error: 'שגיאה בהסרה מהעגלה' });
   }
 };
+
+exports.updateQuantity = async (req, res) => {
+  const { product_id, quantity } = req.body;
+  const userId = req.user.id;
+
+  if (!product_id || !quantity || quantity < 1) {
+    return res.status(400).json({ error: 'Missing or invalid data' });
+  }
+
+  try {
+    await db.query(
+      `UPDATE Carts SET quantity = ? WHERE user_id = ? AND product_id = ?`,
+      [quantity, userId, product_id]
+    );
+    res.json({ message: 'Quantity updated' });
+  } catch (err) {
+    console.error('❌ שגיאה בעדכון כמות:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+exports.clearCart = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    await db.query('DELETE FROM Carts WHERE user_id = ?', [userId]);
+    res.json({ message: 'העגלה נוקתה בהצלחה' });
+  } catch (err) {
+    console.error('❌ שגיאה בניקוי העגלה:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+

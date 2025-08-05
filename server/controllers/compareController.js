@@ -1,54 +1,85 @@
-// מחשב מהו הסופר הכי משתלם לפי עגלת הקניות והעדפות המשתמש. מחזיר גם מחירים חסרים ומיקום.
+// server/controllers/compareController.js
 
 const db = require('../db');
 
 exports.compareSupermarkets = async (req, res) => {
-  const cart = req.body.cart;
-
-  if (!Array.isArray(cart) || cart.length === 0) {
-    return res.status(400).json({ error: 'סל קניות לא תקין' });
-  }
-
   try {
-    // שליפת כל הסופרים
-    const [supermarkets] = await db.query('SELECT * FROM Supermarkets');
-    const results = [];
+    const userId = req.user.id;
 
-    for (const supermarket of supermarkets) {
-      const [products] = await db.query(
-        'SELECT * FROM Products WHERE supermarket_id = ?',
-        [supermarket.id]
-      );
+    // שליפת כל המוצרים בעגלה + השמות שלהם
+    const [cartItems] = await db.query(`
+      SELECT P.id, P.name, C.quantity
+      FROM Carts C
+      JOIN Products P ON C.product_id = P.id
+      WHERE C.user_id = ?
+    `, [userId]);
+
+    if (!cartItems.length) {
+      return res.json([]);
+    }
+
+    // מיפוי בין product_id לבין שם
+    const cartMap = {}; // { id: { name, quantity } }
+    const productIds = [];
+
+    for (const item of cartItems) {
+      cartMap[item.id] = { name: item.name, quantity: item.quantity };
+      productIds.push(item.id);
+    }
+
+
+    // שליפת כל הסופרים
+    const [supermarkets] = await db.query(`SELECT id, name, address FROM Supermarkets`);
+
+    let results = [];
+
+    for (const market of supermarkets) {
+      let foundProducts = [];
+      const placeholders = productIds.map(() => '?').join(',');
+      const [products] = await db.query(`
+        SELECT * FROM SupermarketProducts
+        WHERE supermarket_id = ? AND product_id IN (${placeholders})
+      `, [market.id, ...productIds]);
 
       let total = 0;
-      let missing = [];
-      for (const item of cart) {
-        const match = products.find(p =>
-          p.name === item.name &&
-          (item.brand ? p.brand === item.brand : true)
-        );
-        if (match) {
-          total += match.price * (item.quantity || 1);
+      let outOfStock = [];
+      let missingProducts = [];
+
+      for (const pid of productIds) {
+        const found = products.find(p => p.product_id === pid);
+        const { name, quantity } = cartMap[pid];
+
+        if (!found) {
+          // המוצר בכלל לא קיים בסופר הזה
+          missingProducts.push(name);
+        } else if (found.status === 'available') {
+          // המוצר קיים וזמין
+         const pricePerItem = Number(found.price);
+          const subtotal = pricePerItem * quantity;
+          total += subtotal;
+          foundProducts.push({ name, price: pricePerItem, quantity });
         } else {
-          missing.push(item.name + (item.brand ? ` (${item.brand})` : ''));
+          // המוצר קיים אך לא זמין
+          outOfStock.push(name);
         }
       }
 
       results.push({
-        supermarket_id: supermarket.id,
-        name: supermarket.name,
-        address: supermarket.address,
-        total: Number(total.toFixed(2)),
-        missing
+        supermarket_id: market.id,
+        name: market.name,
+        address: market.address,
+        totalPrice: total,
+        outOfStock,
+        missingProducts,
+        foundProducts,
       });
     }
 
-    // מיון לפי מחיר כולל
-    results.sort((a, b) => a.total - b.total);
-
+    results.sort((a, b) => a.totalPrice - b.totalPrice);
     res.json(results);
+
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'שגיאה בעת השוואת סופרים' });
+    console.error('❌ שגיאה בהשוואת סופרים:', err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 };
