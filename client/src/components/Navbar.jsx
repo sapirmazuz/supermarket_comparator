@@ -23,6 +23,8 @@ const Navbar = () => {
       <h2 style={styles.logo}>השוואת סופרמרקטים</h2>
 
       <div style={styles.links}>
+        <Link to="/" style={styles.link}>בית</Link>
+
         {/* ניווט ללקוחות */}
         {user?.role === 'client' && (
           <>

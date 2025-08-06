@@ -2,10 +2,19 @@ const db = require('../db');
 
 const Product = {
   // שליפת כל המוצרים בקטלוג הכללי
-  getAll: async () => {
-    const [products] = await db.query('SELECT * FROM Products');
-    return products;
-  },
+//   getAllByCategory: async (category) => {
+//   let query = 'SELECT * FROM Products';
+//   const params = [];
+
+//   if (category) {
+//     query += ' WHERE category = ?';
+//     params.push(category);
+//   }
+
+//   const [products] = await db.query(query, params);
+//   return products;
+// },
+
 
   // הוספת מוצר חדש לקטלוג הכללי
   createCatalogProduct: async ({ name, brand, quantity }) => {

@@ -67,16 +67,28 @@ exports.addProductToSupermarket = async (req, res) => {
 };
 
 
-// שליפת הקטלוג המלא (לכולם)
+// שליפת קטלוג מסונן לפי קטגוריה
 exports.getAllProducts = async (req, res) => {
+  const { category } = req.query;
+
   try {
-    const [products] = await db.query('SELECT * FROM Products');
-    res.json(products);
+    let query = 'SELECT * FROM Products';
+    let params = [];
+
+    if (category) {
+      query += ' WHERE category = ?';
+      params.push(category);
+    }
+
+    const [rows] = await db.query(query, params);
+    res.json(rows);
   } catch (err) {
-    console.error('DB Error:', err);
-    res.status(500).json({ error: 'Failed to retrieve products' });
+    console.error('שגיאה בשליפת מוצרים:', err);
+    res.status(500).json({ error: 'שגיאה בשליפת מוצרים' });
   }
 };
+
+
 
 // שליפת מוצרים זמינים בסופר מסוים (ללקוח)
 exports.getAvailableProductsForSupermarket = async (req, res) => {

@@ -15,19 +15,25 @@ export default function DashboardManager() {
   const [selectedProductId, setSelectedProductId] = useState(null);
   const user = getUser();
   const location = useLocation();
-  const view = new URLSearchParams(location.search).get("view") || "assign";
+  const params = new URLSearchParams(location.search);
+  const view = params.get('view'); // ⬅️ הוסף את זה
+  const category = params.get('category'); // ⬅️ כבר יש לך את זה
+
 
   useEffect(() => {
-    if (view === 'assign') {
-      api.get('/products')
-        .then(res => setCatalog(res.data))
-        .catch(() => setMessage('שגיאה בטעינת הקטלוג'));
-    } else if (view === 'manage') {
-      api.get('/products/my')
-        .then(res => setMyProducts(res.data))
-        .catch(() => setMessage('שגיאה בטעינת המוצרים שלך'));
-    }
-  }, [view]);
+  if (view === 'assign') {
+    let endpoint = '/products';
+    if (category) endpoint += `?category=${category}`;
+    api.get(endpoint)
+      .then(res => setCatalog(res.data))
+      .catch(() => setMessage('שגיאה בטעינת הקטלוג'));
+  } else if (view === 'manage') {
+    api.get('/products/my')
+      .then(res => setMyProducts(res.data))
+      .catch(() => setMessage('שגיאה בטעינת המוצרים שלך'));
+  }
+}, [view, category]); // ← יופעל מחדש אם משתנה
+
 
   const handleAssignProduct = async (product_id) => {
     const { price, status } = assignments[product_id] || {};
@@ -75,6 +81,9 @@ export default function DashboardManager() {
       <h2 className="text-xl font-bold mb-4">
         {view === 'assign' ? '🛒 שיוך מוצרים לסופר שלך' : '🛠 ניהול המוצרים שלך'}
       </h2>
+      {category && view === 'assign' && (
+        <h3 className="text-md mb-2">📦 קטגוריה: {category}</h3>
+      )}
 
       <input
         type="text"

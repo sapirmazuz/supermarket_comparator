@@ -18,23 +18,16 @@ export default function Products() {
   const view = new URLSearchParams(location.search).get('view') || 'catalog';
   const navigate = useNavigate();
   const [quantities, setQuantities] = useState({});
+  const category = new URLSearchParams(location.search).get('category');
 
-  useEffect(() => {
-  fetchCatalog();
-  if (user?.role === 'client') {
-      fetchCartFromServer(); // ⬅️ שולף מהשרת
-    }
-  }, []);
-
-
-  const fetchCatalog = async () => {
-    try {
-      const res = await api.get('/products');
-      setProducts(res.data);
-    } catch (err) {
-      console.error('Failed to load catalog:', err);
-    }
-  };
+  // const fetchCatalog = async () => {
+  //   try {
+  //     const res = await api.get('/products');
+  //     setProducts(res.data);
+  //   } catch (err) {
+  //     console.error('Failed to load catalog:', err);
+  //   }
+  // };
 
   const fetchCartFromServer = async () => {
     try {
@@ -44,6 +37,25 @@ export default function Products() {
       console.error('❌ שגיאה בשליפת עגלה:', err);
     }
   };
+
+
+useEffect(() => {
+  fetchCatalog();
+  if (user?.role === 'client') {
+    fetchCartFromServer();
+  }
+}, [category]); // ← הקטלוג נטען מחדש כשמשתנה הקטגוריה
+
+const fetchCatalog = async () => {
+  try {
+    let endpoint = '/products';
+    if (category) endpoint += `?category=${category}`;
+    const res = await api.get(endpoint);
+    setProducts(res.data);
+  } catch (err) {
+    console.error('שגיאה בטעינת מוצרים:', err);
+  }
+};
 
 
   const addToCart = async (product) => {

@@ -1,6 +1,7 @@
 //  רכיב השורש הראשי; מגדיר נתיבים (<Routes>) ומבנה בסיסי של
 
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Products from './pages/Products';
@@ -41,7 +42,8 @@ const [user, setUser] = useState(null); // ⬅️ התחלה ריקה
     <Router>
       <LayoutWithNavbar>
         <Routes>
-          <Route path="/" element={<Navigate to="/products" />} />
+          <Route path="/" element={<Home />} />
+          {/* <Route path="/" element={<Navigate to="/products" />} /> */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/products" element={<Products />} />
@@ -50,6 +52,7 @@ const [user, setUser] = useState(null); // ⬅️ התחלה ריקה
             path="/dashboard"
             element={user?.role === 'manager' ? <DashboardManager /> : <Navigate to="/products" />}
           />
+           <Route path="*" element={<Navigate to="/" />} /> {/* ברירת מחדל */}
         </Routes>
       </LayoutWithNavbar>
     </Router>
