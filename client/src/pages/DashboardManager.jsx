@@ -3,6 +3,7 @@ import api from '../services/api';
 import { getUser } from '../services/auth';
 import { useLocation } from 'react-router-dom';
 import CommentSection from '../components/CommentSection';
+import '../css/products.css';
 
 
 export default function DashboardManager() {
@@ -77,151 +78,205 @@ useEffect(() => {
     }
   };
 
-  return (
-    <div className="p-4">
-      <h2 className="text-xl font-bold mb-4">
-        {view === 'assign' ? '🛒 שיוך מוצרים לסופר שלך' : '🛠 ניהול המוצרים שלך'}
-      </h2>
-      {category && view === 'assign' && (
-        <h3 className="text-md mb-2">📦 קטגוריה: {category}</h3>
-      )}
-
-      <input
-        type="text"
-        placeholder="🔍 חפש מוצר או מותג..."
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-        className="border px-3 py-1 rounded w-full mb-4"
-      />
-
-      {view === 'assign' && catalog
-        .filter(prod =>
-          prod.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          prod.brand.toLowerCase().includes(searchQuery.toLowerCase())
-        )
-        .map(prod => (
-          <div key={prod.id} className="border p-3 rounded mb-2">
-            <b>{prod.name}</b> | {prod.brand} | {prod.quantity}
-            <div className="mt-2">
-              <input
-                placeholder="מחיר"
-                type="number"
-                step="0.01"
-                value={assignments[prod.id]?.price || ''}
-                onChange={(e) =>
-                  setAssignments(prev => ({
-                    ...prev,
-                    [prod.id]: { ...prev[prod.id], price: e.target.value }
-                  }))
-                }
-                className="border px-2 py-1 mr-2"
-              />
-              <select
-                value={assignments[prod.id]?.status || ''}
-                onChange={(e) =>
-                  setAssignments(prev => ({
-                    ...prev,
-                    [prod.id]: { ...prev[prod.id], status: e.target.value }
-                  }))
-                }
-                className="border px-2 py-1 mr-2"
-              >
-                <option value="">בחר זמינות</option>
-                <option value="available">זמין</option>
-                <option value="out_of_stock">לא זמין</option>
-              </select>
-              <button
-                onClick={() => handleAssignProduct(prod.id)}
-                className="bg-blue-600 text-white px-3 py-1 rounded"
-              >
-                שייך לסופר
-              </button>
-            </div>
+return (
+  <div className={view === 'assign' ? 'catalog' : 'p-4'}>
+    {view === 'assign' ? (
+      <>
+        <div className="catalog-header">
+          <div className="search">
+            <input
+              type="text"
+              placeholder="🔍 חפש מוצר או מותג..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
-        ))}
+        </div>
 
-      {view === 'manage' && myProducts
-        .filter(prod =>
-          prod.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          prod.brand.toLowerCase().includes(searchQuery.toLowerCase())
-        )
-        .map(prod => (
-          <div key={prod.product_id} className="border p-3 rounded mb-2">
-            <b>{prod.name}</b> | {prod.brand} | {prod.quantity}
-            <div className="mt-2">
-              💰
-              <input
-                type="number"
-                value={prod.price}
-                onChange={(e) => {
-                  const val = parseFloat(e.target.value);
-                  setMyProducts(prev =>
-                    prev.map(p =>
-                      p.product_id === prod.product_id ? { ...p, price: val } : p
-                    )
-                  );
-                }}
-                className="w-20 mx-2"
-              />
-              ₪
-              <select
-                value={editStates[prod.product_id]?.status ?? prod.status}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  setEditStates(prev => ({
-                    ...prev,
-                    [prod.product_id]: {
-                      ...prev[prod.product_id],
-                      status: val
+        <h2 className="text-xl font-bold" style={{ margin: '8px 0 12px' }}>
+          🛒 שיוך מוצרים לסופר שלך
+          {category ? (
+            <span style={{ fontSize: 14, color: '#6b7280' }}> • קטגוריה: {category}</span>
+          ) : null}
+        </h2>
+
+        <div className="cards">
+          {catalog
+            .filter(
+              (p) =>
+                p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                p.brand.toLowerCase().includes(searchQuery.toLowerCase())
+            )
+            .map((p) => (
+              <div key={p.id} className="card">
+                <div className="card-head">
+                  {/* תמונה אמיתית? <img className="thumb" src={p.image_url} alt={p.name} /> */}
+                  <div className="thumb">תמונה</div>
+                  <div>
+                    <div className="title">{p.name}</div>
+                    <div className="sub">
+                      {p.brand} • {p.quantity}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="assign-controls">
+                  <input
+                    placeholder="מחיר"
+                    type="number"
+                    step="0.01"
+                    value={assignments[p.id]?.price || ''}
+                    onChange={(e) =>
+                      setAssignments((prev) => ({
+                        ...prev,
+                        [p.id]: { ...prev[p.id], price: e.target.value },
+                      }))
                     }
-                  }));
-                }}
-                className="mx-2"
-              >
-                <option value="available">זמין</option>
-                <option value="out_of_stock">לא זמין</option>
-              </select>
+                    className="price-input"
+                  />
 
-              <button
-                onClick={() => {
-                  const changes = editStates[prod.product_id] || {};
-                  const updatedPrice = changes.price ?? prod.price;
-                  const updatedStatus = changes.status ?? prod.status;
-                  updateProduct(prod.product_id, updatedPrice, updatedStatus);
-                }}
-                className="ml-2 bg-yellow-400 px-2 py-1 rounded"
-              >
-                עדכן
-              </button>
-              <button
-                onClick={() => setSelectedProductId(
-                  selectedProductId === prod.product_id ? null : prod.product_id)}
-              >
-                {selectedProductId === prod.product_id ? 'סגור תגובות' : 'הצג תגובות'}
+                  <select
+                    value={assignments[p.id]?.status || ''}
+                    onChange={(e) =>
+                      setAssignments((prev) => ({
+                        ...prev,
+                        [p.id]: { ...prev[p.id], status: e.target.value },
+                      }))
+                    }
+                    className="assign-select"
+                  >
+                    <option value="">בחר זמינות</option>
+                    <option value="available">זמין</option>
+                    <option value="out_of_stock">לא זמין</option>
+                  </select>
+                </div>
+
+                <button className="add" onClick={() => handleAssignProduct(p.id)}>
+                  ➕ שייך לסופר
                 </button>
+              </div>
+            ))}
+        </div>
+
+        {message && <p className="message">{message}</p>}
+      </>
+    ) : (
+      <div className="manage-panel">
+        <div className="manage-header">
+          <h2 className="manage-title">ניהול המוצרים שלך</h2>
+        </div>
+
+        <div className="manage-search">
+          <input
+            type="text"
+            placeholder="🔍 חפש מוצר או מותג..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+
+        <ul className="manage-list">
+          {myProducts
+            .filter(
+              (prod) =>
+                prod.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                prod.brand.toLowerCase().includes(searchQuery.toLowerCase())
+            )
+            .map((prod) => (
+              <li key={prod.product_id} className="manage-item">
+                <div className="manage-left">
+                  <div className="manage-thumb">תמונה</div>
+                  <div>
+                    <div className="manage-name">
+                      {prod.name} ({prod.brand})
+                    </div>
+                    <div style={{ fontSize: 12, color: '#6b7280' }}>{prod.quantity}</div>
+                  </div>
+                </div>
+
+                <div className="manage-controls">
+                  <span>💰</span>
+                  <input
+                    type="number"
+                    value={prod.price}
+                    onChange={(e) => {
+                      const val = parseFloat(e.target.value || '0');
+                      setMyProducts((prev) =>
+                        prev.map((p) => (p.product_id === prod.product_id ? { ...p, price: val } : p))
+                      );
+                    }}
+                    className="manage-input"
+                  />
+                  <span>₪</span>
+
+                  <select
+                    value={editStates[prod.product_id]?.status ?? prod.status}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setEditStates((prev) => ({
+                        ...prev,
+                        [prod.product_id]: {
+                          ...prev[prod.product_id],
+                          status: val,
+                        },
+                      }));
+                    }}
+                    className="manage-select"
+                  >
+                    <option value="available">זמין</option>
+                    <option value="out_of_stock">לא זמין</option>
+                  </select>
+
+                  <div className="manage-actions">
+                    <button
+                      onClick={() => {
+                        const changes = editStates[prod.product_id] || {};
+                        const updatedPrice = changes.price ?? prod.price;
+                        const updatedStatus = changes.status ?? prod.status;
+                        updateProduct(prod.product_id, updatedPrice, updatedStatus);
+                      }}
+                      className="btn btn-primary"
+                    >
+                      עדכן
+                    </button>
+
+                    <button
+                      className="btn btn-outline"
+                      onClick={() =>
+                        setSelectedProductId(
+                          selectedProductId === prod.product_id ? null : prod.product_id
+                        )
+                      }
+                    >
+                      {selectedProductId === prod.product_id ? 'סגור תגובות' : 'הצג תגובות'}
+                    </button>
+
+                    <button className="btn btn-danger" onClick={() => deleteProduct(prod.product_id)}>
+                      מחק
+                    </button>
+                  </div>
+                </div>
 
                 {selectedProductId === prod.product_id && (
-                  <CommentSection
-                    product={{
-                      id: prod.product_id,
-                      name: prod.name,
-                      brand: prod.brand,
-                      quantity: prod.quantity
-                    }}
-                    onClose={() => setSelectedProductId(null)}
-                  />
+                  <div style={{ marginTop: 8, width: '100%' }}>
+                    <CommentSection
+                      product={{
+                        id: prod.product_id,
+                        name: prod.name,
+                        brand: prod.brand,
+                        quantity: prod.quantity,
+                      }}
+                      onClose={() => setSelectedProductId(null)}
+                    />
+                  </div>
                 )}
+              </li>
+            ))}
+        </ul>
 
-              <button
-                onClick={() => deleteProduct(prod.product_id)}
-                className="ml-2 text-red-600 underline"
-              >
-                מחק
-              </button>
-            </div>
-          </div>
-        ))}
-      {message && <p className="mt-4 text-green-700">{message}</p>}
-    </div>
-  );
+        {message && <p className="manage-message">{message}</p>}
+      </div>
+    )}
+  </div>
+);
 }
