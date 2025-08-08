@@ -21,15 +21,7 @@ export default function Products() {
   const navigate = useNavigate();
   const [quantities, setQuantities] = useState({});
   const category = new URLSearchParams(location.search).get('category');
-
-  // const fetchCatalog = async () => {
-  //   try {
-  //     const res = await api.get('/products');
-  //     setProducts(res.data);
-  //   } catch (err) {
-  //     console.error('Failed to load catalog:', err);
-  //   }
-  // };
+const qParam = new URLSearchParams(location.search).get('q') || '';
 
   const fetchCartFromServer = async () => {
     try {
@@ -119,6 +111,10 @@ const updateCartQuantity = async (productId, newQuantity) => {
     console.error('❌ שגיאה בניקוי העגלה:', err);
   }
 };
+
+useEffect(() => {
+  setSearchQuery(qParam);   // לסנכרן את תיבת החיפוש עם q מה-URL
+}, [qParam]);
 
 return (
   <div className="catalog">

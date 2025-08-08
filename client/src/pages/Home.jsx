@@ -1,6 +1,5 @@
 // client/src/pages/Home.jsx
-
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../css/Home.css';
 import cartIcon from '../assets/cart.png'; // ודא שיש אייקון עגלה בתיקייה המתאימה
@@ -23,6 +22,8 @@ export default function Home() {
   const navigate = useNavigate();
   const user = getUser();
 
+  const [term, setTerm] = useState('');
+  
 const goToCart = () => {
   if (user?.role === 'manager') {
     navigate('/dashboard?view=manage'); // ✅ ניהול מוצרים של המנהל
@@ -40,30 +41,46 @@ const goToCart = () => {
     }
   };
 
+   const doSearch = () => {
+    const q = term.trim();
+    if (!q) return;
+    // חיפוש מכל המאגר – בלי קטגוריה
+    navigate(`/products?view=catalog&q=${encodeURIComponent(q)}`);
+  };
+
 
  return (
-  <div className="homepage">
-    <header className="header">
-      <div className="cart-icon" onClick={goToCart}>
-        <img src={cartIcon} alt="עגלה" />
-      </div>
-      <h1 className="logo">השוואת מחירי סופרים</h1>
-      <input className="search-bar" placeholder="חיפוש מוצר..." />
-    </header>
-
-    <section className="categories">
-      {categories.map(cat => (
-        <div
-          className="category"
-          key={cat.category}
-          onClick={() => handleCategoryClick(cat.category)}
-
-        >
-          <img src={require(`../assets/${cat.image}`)} alt={cat.name} />
-          <p>{cat.name}</p>
+    <div className="homepage">
+      <header className="header">
+        <div className="cart-icon" onClick={goToCart}>
+          <img src={cartIcon} alt="עגלה" />
         </div>
-      ))}
-    </section>
-  </div>
-);
+        <h1 className="logo">השוואת מחירי סופרים</h1>
+
+        <div className="search-wrap">
+          <input
+            className="search-bar"
+            placeholder="חיפוש מוצר..."
+            value={term}
+            onChange={(e) => setTerm(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && doSearch()}
+          />
+          <button className="search-btn" onClick={doSearch}>חפש</button>
+        </div>
+      </header>
+
+      <section className="categories">
+        {categories.map(cat => (
+          <div
+            className="category"
+            key={cat.category}
+            onClick={() => handleCategoryClick(cat.category)}
+          >
+            <img src={require(`../assets/${cat.image}`)} alt={cat.name} />
+            <p>{cat.name}</p>
+          </div>
+        ))}
+      </section>
+    </div>
+  );
 }

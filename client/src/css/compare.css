@@ -1,0 +1,101 @@
+/* ===== Compare page – pastel, RTL (clean) ===== */
+:root{
+  /* טקסט כללי */
+  --ink-700:#334155;
+
+  /* תגיות/כותרות – חסרים */
+  --missing-bg:        #fff1f4;   /* רקע עדין */
+  --missing-border:    #ffc8d1;
+  --missing-text:      #9f2241;   /* טקסט/כותרת */
+
+  /* תגיות/כותרות – אזלו */
+  --oos-bg:            #fff7eb;
+  --oos-border:        #ffdca8;
+  --oos-text:          #7a4a00;
+}
+
+.compare{
+  max-width:1100px; margin:0 auto; padding:16px; direction:rtl;
+}
+
+/* Title */
+.compare-title{
+  position:relative; display:inline-block; font-size:24px; font-weight:800;
+  color:var(--ink-700); padding:4px 10px 6px; border-radius:14px; margin-bottom:12px;
+}
+.compare-title::after{
+  content:""; position:absolute; left:10px; right:10px; bottom:2px; height:8px;
+  border-radius:9999px; background:linear-gradient(90deg,#cde7f0,#f5d9e2); opacity:.55;
+}
+
+/* Grid */
+.compare-grid{ display:grid; grid-template-columns:1fr; gap:20px; }
+@media (min-width:900px){ .compare-grid{ grid-template-columns:1fr 1fr; } }
+
+/* Card */
+.supermarket-card{
+  background:#fff; border:1px solid #e8eef5; border-radius:20px;
+  box-shadow:0 8px 20px rgba(16,24,40,.04); padding:18px;
+  transition:transform .12s, box-shadow .12s, border-color .12s;
+}
+.supermarket-card:hover{
+  transform:translateY(-2px);
+  box-shadow:0 12px 28px rgba(16,24,40,.08);
+  border-color:#dfe7ef;
+}
+
+/* Header row inside card */
+.card-head{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px; }
+.head-left{ display:flex; align-items:center; gap:10px; min-width:0; }
+.store-avatar{ width:44px; height:44px; border-radius:12px; background:#f0f4f8; display:grid; place-items:center; color:#94a3b8; font-weight:800; }
+.store-name{ font-weight:800; color:#1f2937; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:260px; }
+.store-address{ font-size:12px; color:#6b7280; }
+
+/* Total line + badges */
+.total-line{
+  display:flex; align-items:center; gap:10px;
+  padding:10px 12px; border:1px dashed #e4edf5; border-radius:12px; background:#f9fcff; margin-top:6px;
+}
+.total-price{ font-size:20px; font-weight:900; color:#0f766e; }
+
+/* badges */
+.missing-badge,.oos-badge{
+  font-size:12px; font-weight:800; padding:4px 10px; border-radius:9999px; border:1px solid;
+}
+.missing-badge{ background:var(--missing-bg); border-color:var(--missing-border); color:var(--missing-text); }
+.oos-badge    { background:var(--oos-bg);     border-color:var(--oos-border);     color:var(--oos-text); }
+
+/* Section titles */
+.section-title{
+  display:inline-flex; align-items:center; gap:8px;
+  font-size:17px; line-height:1.4; font-weight:800;
+  padding:6px 12px; border-radius:12px; margin-top:12px;
+}
+.section-title.missing{ background:var(--missing-bg); color:var(--missing-text); }
+.section-title.oos    { background:var(--oos-bg);     color:var(--oos-text); }
+
+/* Lists — צבע כמו הכותרת + בולט אחד בלבד */
+.list{ margin:0; padding:0 22px; font-size:14px; line-height:1.6; list-style:disc inside; }
+.list.missing{ color:var(--missing-text); }
+.list.oos    { color:var(--oos-text); }
+.list li{ margin:6px 0; }
+.list li::marker{ color:inherit; } /* שהבולט יקבל את צבע הרשימה */
+
+/* Actions */
+.card-actions{ display:flex; gap:8px; flex-wrap:wrap; }
+.btn{
+  height:40px; padding:0 14px; border-radius:12px; border:1px solid transparent;
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  font-weight:800; cursor:pointer;
+}
+.btn-primary{ background:#cde7f0; color:#1e3a5f; border-color:#b6d6e2; }
+.btn-primary:hover{ background:#b6d6e2; }
+.btn-danger{ background:#f9d6d5; color:#7a1f1f; border-color:#f3bcbc; }
+.btn-danger:hover{ background:#f3bcbc; }
+.btn-outline{ background:#fff; color:#374151; border-color:#e5e7eb; }
+.btn-outline:hover{ background:#f3f4f6; }
+
+/* Map modal */
+.map-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,.6); display:flex; align-items:center; justify-content:center; z-index:1000; }
+.map-modal{ background:#fff; padding:16px; border-radius:16px; width:90%; max-width:720px; max-height:90%; overflow:auto; box-shadow:0 20px 40px rgba(0,0,0,.18); }
+.map-title{ font-weight:800; margin-bottom:12px; color:var(--ink-700); }

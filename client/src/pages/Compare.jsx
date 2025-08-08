@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { getUser } from '../services/auth';
 import api from '../services/api';
 import MapView from '../components/MapView';
+import '../css/compare.css';
 
 export default function Compare() {
   const [results, setResults] = useState([]);
@@ -39,67 +40,90 @@ export default function Compare() {
 
 
 return (
-  <div className="comparison-page">
-    <h2>השוואת סופרים לעגלת הקניות שלך</h2>
+  <div className="compare">
+    <h2 className="compare-title">השוואת סופרים לעגלת הקניות שלך</h2>
 
-    {results.map((supermarket) => (
-      <div key={supermarket.supermarket_id} className="supermarket-card" style={{ border: '1px solid #ccc', padding: '1rem', marginBottom: '1rem', borderRadius: '8px' }}>
-        <h3>{supermarket.name}</h3>
-        <p><strong>כתובת:</strong> {supermarket.address}</p>
-        <button
-          className="mt-2 bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700"
-          onClick={() => handleMapClick(supermarket.address)}
-        >
-          📍 ניווט
-        </button>
-        <p><strong>מחיר כולל:</strong> ₪{!isNaN(supermarket.totalPrice) ? Number(supermarket.totalPrice).toFixed(2) : 'לא זמין'}</p>
-
-        {supermarket.missingProducts.length > 0 && (
-          <>
-            <p style={{ color: 'red', fontWeight: 'bold' }}>
-              ❌ מוצרים שלא קיימים בסופר:
-            </p>
-            <ul style={{ color: 'red' }}>
-              {supermarket.missingProducts.map((name, idx) => (
-                <li key={idx}>{name}</li>
-              ))}
-            </ul>
-          </>
-        )}
-
-        {supermarket.outOfStock.length > 0 && (
-          <>
-            <p style={{ color: 'orange', fontWeight: 'bold' }}>
-              ⚠️ מוצרים שאזלו מהמלאי:
-            </p>
-            <ul style={{ color: 'orange' }}>
-              {supermarket.outOfStock.map((name, idx) => (
-                <li key={idx}>{name}</li>
-              ))}
-            </ul>
-          </>
-        )}
+    {(!results || results.length === 0) ? (
+      <div className="supermarket-card" style={{ textAlign: 'center' }}>
+        לא נמצאו תוצאות השוואה
       </div>
-    ))}
-    {/* ✅ Modal map */}
-      {showMap && selectedAddress && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, width: '100%',
-          height: '100%', backgroundColor: 'rgba(0,0,0,0.6)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
-        }}>
-          <div style={{
-            backgroundColor: 'white', padding: '1rem', borderRadius: '10px',
-            width: '90%', maxWidth: '700px', maxHeight: '90%', overflow: 'auto'
-          }}>
-            <h3 style={{ marginBottom: '1rem' }}>מיקום על המפה</h3>
-            <MapView address={selectedAddress} />
-            <button onClick={handleCloseMap} className="mt-3 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
-              סגור
-            </button>
+    ) : (
+      <div className="compare-grid">
+        {results.map((supermarket) => (
+          <div key={supermarket.supermarket_id} className="supermarket-card">
+            {/* כותרת הכרטיס */}
+            <div className="card-head">
+              <div className="head-left">
+                <div className="store-avatar">🏬</div>
+                <div>
+                  <div className="store-name">{supermarket.name}</div>
+                  <div className="store-address">כתובת: {supermarket.address}</div>
+                </div>
+              </div>
+
+              <div className="total-line">
+                <div className="total-price">
+                  ₪{!isNaN(supermarket.totalPrice) ? Number(supermarket.totalPrice).toFixed(2) : 'לא זמין'}
+                </div>
+                {Array.isArray(supermarket.missingProducts) && supermarket.missingProducts.length > 0 && (
+                  <div className="missing-badge">{supermarket.missingProducts.length} חסרים</div>
+                )}
+                {Array.isArray(supermarket.outOfStock) && supermarket.outOfStock.length > 0 && (
+                  <div className="oos-badge">{supermarket.outOfStock.length} אזלו</div>
+                )}
+              </div>
+            </div>
+
+            {/* רשימות חסרים/אזלו (אם יש) */}
+            {Array.isArray(supermarket.missingProducts) && supermarket.missingProducts.length > 0 && (
+              <>
+                <div className="section-title missing">מוצרים שלא קיימים בסופר:</div>
+                <ul className="list missing">
+                  {supermarket.missingProducts.map((name, idx) => (
+                    <li key={idx}>{name}</li>
+                  ))}
+                </ul>
+              </>
+            )}
+
+            {Array.isArray(supermarket.outOfStock) && supermarket.outOfStock.length > 0 && (
+              <>
+                <div className="section-title oos">מוצרים שאזלו מהמלאי:</div>
+                <ul className="list oos">
+                  {supermarket.outOfStock.map((name, idx) => (
+                    <li key={idx}>{name}</li>
+                  ))}
+                </ul>
+              </>
+            )}
+
+            {/* פעולות */}
+            <div className="card-actions">
+              <button
+                className="btn btn-primary"
+                onClick={() => handleMapClick(supermarket.address)}
+              >
+                📍 ניווט
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    )}
+
+    {/* מודאל מפה */}
+    {showMap && selectedAddress && (
+      <div className="map-backdrop">
+        <div className="map-modal">
+          <h3 className="map-title">מיקום על המפה</h3>
+          <MapView address={selectedAddress} />
+          <div style={{ marginTop: 12 }}>
+            <button onClick={handleCloseMap} className="btn btn-danger">סגור</button>
           </div>
         </div>
-      )}
+      </div>
+    )}
   </div>
 );
+
 }
