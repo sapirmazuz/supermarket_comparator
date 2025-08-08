@@ -19,20 +19,21 @@ export default function DashboardManager() {
   const view = params.get('view'); // ⬅️ הוסף את זה
   const category = params.get('category'); // ⬅️ כבר יש לך את זה
 
-
-  useEffect(() => {
+useEffect(() => {
   if (view === 'assign') {
-    let endpoint = '/products';
-    if (category) endpoint += `?category=${category}`;
-    api.get(endpoint)
+    api.get('/products', { params: category ? { category } : {} })
       .then(res => setCatalog(res.data))
       .catch(() => setMessage('שגיאה בטעינת הקטלוג'));
   } else if (view === 'manage') {
+    if (!user || user.role !== 'manager') return; // הימנעות מקריאה שתגרום ל-403
     api.get('/products/my')
       .then(res => setMyProducts(res.data))
-      .catch(() => setMessage('שגיאה בטעינת המוצרים שלך'));
+      .catch(err => {
+        const status = err?.response?.status;
+        setMessage(status === 403 ? 'אין הרשאה (התחברי כמנהל)' : 'שגיאה בטעינת המוצרים שלך');
+      });
   }
-}, [view, category]); // ← יופעל מחדש אם משתנה
+}, [view, category, user?.role]);
 
 
   const handleAssignProduct = async (product_id) => {

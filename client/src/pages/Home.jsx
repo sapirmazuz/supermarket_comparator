@@ -24,16 +24,22 @@ export default function Home() {
   const user = getUser();
 
 const goToCart = () => {
-  navigate('/products?view=cart'); // ✅ נדרש לעגלת לקוח
+  if (user?.role === 'manager') {
+    navigate('/dashboard?view=manage'); // ✅ ניהול מוצרים של המנהל
+  } else {
+    navigate('/products?view=cart'); // ✅ עגלת לקוח
+  }
 };
+
   
   const handleCategoryClick = (category) => {
     if (user?.role === 'manager') {
-      navigate(`/dashboard-manager?view=assign&category=${encodeURIComponent(category)}`);
+      navigate(`/dashboard?view=assign&category=${encodeURIComponent(category)}`);
     } else {
       navigate(`/products?view=catalog&category=${encodeURIComponent(category)}`);
     }
   };
+
 
  return (
   <div className="homepage">
