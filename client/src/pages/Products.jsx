@@ -7,7 +7,7 @@ import CommentSection from '../components/CommentSection';
 import { useLocation } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import '../css/products.css';
-
+import cartIcon from '../assets/cart.png';
 
 export default function Products() {
   const [products, setProducts] = useState([]);
@@ -22,6 +22,13 @@ export default function Products() {
   const [quantities, setQuantities] = useState({});
   const category = new URLSearchParams(location.search).get('category');
 const qParam = new URLSearchParams(location.search).get('q') || '';
+
+const goToCart = () => {
+  if (user?.role === 'manager') navigate('/dashboard?view=manage');
+  else navigate('/products?view=cart');
+};
+const goHome = () => navigate('/');
+
 
   const fetchCartFromServer = async () => {
     try {
@@ -121,16 +128,27 @@ return (
     {view === 'catalog' && (
       <>
         <div className="catalog-header">
-          <div className="search">
-            <input
-              type="text"
-              placeholder="🔍 חיפוש מוצר, מותג או קטגוריה…"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-          {/* מקום לפילטרים/קטגוריות בהמשך */}
-        </div>
+  <div className="search">
+    <input
+      type="text"
+      placeholder="🔍 חיפוש מוצר, מותג או קטגוריה…"
+      value={searchQuery}
+      onChange={(e) => setSearchQuery(e.target.value)}
+    />
+  </div>
+
+  <div className="quick-actions">
+    <button className="qa-btn" onClick={goToCart} title="העגלה שלי">
+      <img src={cartIcon} alt="עגלה" />
+      <span>העגלה שלי</span>
+    </button>
+
+    <button className="qa-btn" onClick={goHome} title="חזרה לבית">
+      <span className="qa-back" aria-hidden>↩</span>
+      <span>חזור</span>
+    </button>
+  </div>
+</div>
 
         <h2 className="text-xl font-bold" style={{ margin: '8px 0 12px' }}>
           🛒 קטלוג מוצרים
@@ -214,7 +232,13 @@ return (
 
     {view === 'cart' && (
   <div className="cart-panel" style={{ marginTop: 12 }}>
-    <div className="cart-header">
+   {/* הכותרת + כפתור חזור באותה שורה */}
+    <div className="cart-header cart-header-with-back">
+      <button className="qa-btn cart-back" onClick={goHome} title="חזרה לבית">
+        <span className="qa-back" aria-hidden>↩</span>
+        <span>חזור</span>
+      </button>
+
       <h2 className="cart-title">העגלה שלי</h2>
     </div>
 

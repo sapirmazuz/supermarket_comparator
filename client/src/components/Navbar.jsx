@@ -28,8 +28,8 @@ const Navbar = () => {
         {/* ניווט ללקוחות */}
         {user?.role === 'client' && (
           <>
-            <Link to="/compare" style={styles.link}>רשימת סופרים</Link>
-            <Link to="/products?view=catalog" style={styles.link}>מוצרים</Link>
+            {/* <Link to="/compare" style={styles.link}>רשימת סופרים</Link> */}
+            {/* <Link to="/products?view=catalog" style={styles.link}>מוצרים</Link> */}
             <Link to="/products?view=cart" style={styles.link}>העגלה שלי</Link>
           </>
         )}
@@ -37,7 +37,7 @@ const Navbar = () => {
         {/* ניווט למנהלים */}
         {user?.role === 'manager' && (
           <>
-            <Link to="/dashboard?view=assign" style={styles.link}>שיוך מוצרים</Link>
+            {/* <Link to="/dashboard?view=assign" style={styles.link}>שיוך מוצרים</Link> */}
             <Link to="/dashboard?view=manage" style={styles.link}>ניהול המוצרים שלי</Link>
           </>
         )}

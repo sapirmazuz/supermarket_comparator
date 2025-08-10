@@ -1,62 +1,76 @@
-// עמוד התחברות עבור כל סוגי המשתמשים.
+// client/src/pages/Login.jsx
 
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import api from '../services/api';
 import { login as saveLogin } from '../services/auth';
-import { Link } from 'react-router-dom';
-
+import '../css/register.css'; // ← משתמשים באותו CSS של ההרשמה
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const navigate = useNavigate();
+  const [submitting, setSubmitting] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
+    setSubmitting(true);
 
     try {
       const res = await api.post('/users/login', { email, password });
       const { token, user } = res.data;
 
-      localStorage.removeItem('user');
+      localStorage.removeItem('user'); // נשאר כמו שהיה אצלך
+      saveLogin(user, token);          // שמירת התחברות
 
-      // שמירת התחברות
-      saveLogin(user, token);
-
-      // ניווט לפי role
-      if (user.role === 'manager') {
-        window.location.href = '/dashboard';
-      } else {
-        window.location.href = '/products';
-      }
-
+      // כדי לא לשנות את הזרימה שלך – רענון וניווט לעמוד הבית
+      window.location.href = '/';
     } catch (err) {
       setError(err.response?.data?.error || 'שגיאה בהתחברות');
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
-    <div>
-      <h2>התחברות</h2>
-      <form onSubmit={handleLogin}>
-        <div>
-          <label>אימייל:</label>
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-        </div>
-        <div>
-          <label>סיסמה:</label>
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-        </div>
-        <button type="submit">התחבר</button>
-      </form>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-       <p style={{ marginTop: '10px' }}>
-      אין לך חשבון? <Link to="/Register">להרשמה</Link>
-    </p>
+    <div className="auth">
+      <div className="auth-card">
+        <h1 className="auth-title">התחברות</h1>
+        <p className="auth-sub">ברוכה הבאה — התחברי לחשבון שלך</p>
+
+        <form className="auth-form" onSubmit={handleLogin}>
+          <div className="field">
+            <label>אימייל</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="field">
+            <label>סיסמה</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+
+          {error && <div className="alert error">{error}</div>}
+
+          <button type="submit" className="submit" disabled={submitting}>
+            {submitting ? 'מתחברת…' : 'התחבר'}
+          </button>
+
+          <div className="auth-footer">
+            אין לך חשבון? <Link to="/register">להרשמה</Link>
+          </div>
+        </form>
+      </div>
     </div>
-    
   );
 }

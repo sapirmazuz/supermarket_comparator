@@ -1,11 +1,9 @@
-// עמוד הרשמה (כולל בחירת תפקיד – מנהל או לקוח).
-
+// client/src/pages/Register.jsx
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
 import { login as saveLogin } from '../services/auth';
-import { Link } from 'react-router-dom';
-
+import '../css/register.css';
 
 export default function Register() {
   const [name, setName] = useState('');
@@ -13,94 +11,128 @@ export default function Register() {
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('client');
   const [error, setError] = useState('');
-  const navigate = useNavigate();
+  const [submitting, setSubmitting] = useState(false);
   const [supermarketName, setSupermarketName] = useState('');
   const [supermarketAddress, setSupermarketAddress] = useState('');
-
+  const navigate = useNavigate();
 
   const handleRegister = async (e) => {
     e.preventDefault();
     setError('');
-
+    setSubmitting(true);
     try {
       await api.post('/users/register', {
-      name,
-      email,
-      password,
-      role,
-      supermarketName: role === 'manager' ? supermarketName : undefined,
-      supermarketAddress: role === 'manager' ? supermarketAddress : undefined,
-    });
-
-
+        name,
+        email,
+        password,
+        role,
+        supermarketName: role === 'manager' ? supermarketName : undefined,
+        supermarketAddress: role === 'manager' ? supermarketAddress : undefined,
+      });
 
       // התחברות אוטומטית אחרי רישום
       const loginRes = await api.post('/users/login', { email, password });
       const { token, user } = loginRes.data;
       saveLogin(user, token);
 
-      if (user.role === 'manager') {
-        navigate('/dashboard');
-      } else {
-        navigate('/products');
-      }
+      navigate(user.role === 'manager' ? '/dashboard' : '/products');
     } catch (err) {
-      setError(err.response?.data?.error || 'שגיאה בהרשמה');
+      setError(err?.response?.data?.error || 'שגיאה בהרשמה');
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
-    <div>
-      <h2>הרשמה</h2>
-      <form onSubmit={handleRegister}>
-        <div>
-          <label>שם:</label>
-          <input type="text" value={name} onChange={(e) => setName(e.target.value)} required />
-        </div>
-        <div>
-          <label>אימייל:</label>
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-        </div>
-        <div>
-          <label>סיסמה:</label>
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-        </div>
-        <div>
-          <label>תפקיד:</label>
-          <select value={role} onChange={(e) => setRole(e.target.value)}>
-            <option value="client">לקוח</option>
-            <option value="manager">מנהל סופר</option>
-          </select>
-        </div>
-        {role === 'manager' && (
-        <>
-          <div>
-            <label>שם הסופרמרקט:</label>
-            <input
-              type="text"
-              value={supermarketName}
-              onChange={(e) => setSupermarketName(e.target.value)}
-              required={role === 'manager'}
-            />
-          </div>
-          <div>
-            <label>כתובת הסופרמרקט:</label>
-            <input
-              type="text"
-              value={supermarketAddress}
-              onChange={(e) => setSupermarketAddress(e.target.value)}
-              required={role === 'manager'}
-            />
-          </div>
-        </>
-      )}
+    <div className="auth">
+      <div className="auth-card">
+        <h1 className="auth-title">יצירת חשבון</h1>
+        <p className="auth-sub">פתחי חשבון חדש והתחילי להשוות מחירים</p>
 
-        <button type="submit">הרשמה</button>
-      </form>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      <p style={{ marginTop: '10px' }}>
-        כבר יש לך חשבון? <Link to="/login">להתחברות</Link>
-      </p>
+        <form className="auth-form" onSubmit={handleRegister} noValidate>
+          <div className="field">
+            <label>שם מלא</label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="field">
+            <label>אימייל</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="field">
+            <label>סיסמה</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+
+          {/* בחירת תפקיד – טוגל מעוצב */}
+          <div className="role-toggle">
+            <button
+              type="button"
+              className={`role-btn ${role === 'client' ? 'active' : ''}`}
+              onClick={() => setRole('client')}
+            >
+              לקוח
+            </button>
+            <button
+              type="button"
+              className={`role-btn ${role === 'manager' ? 'active' : ''}`}
+              onClick={() => setRole('manager')}
+            >
+              מנהל סופר
+            </button>
+          </div>
+
+          {/* שדות לסוג מנהל בלבד */}
+          {role === 'manager' && (
+            <div className="grid-2">
+              <div className="field">
+                <label>שם הסופרמרקט</label>
+                <input
+                  type="text"
+                  value={supermarketName}
+                  onChange={(e) => setSupermarketName(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="field">
+                <label>כתובת הסופרמרקט</label>
+                <input
+                  type="text"
+                  value={supermarketAddress}
+                  onChange={(e) => setSupermarketAddress(e.target.value)}
+                  required
+                />
+              </div>
+            </div>
+          )}
+
+          {error && <div className="alert error">{error}</div>}
+
+          <button type="submit" className="submit" disabled={submitting}>
+            {submitting ? 'נרשם…' : 'הרשמה'}
+          </button>
+
+          <div className="auth-footer">
+            כבר יש לך חשבון? <Link to="/login">להתחברות</Link>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

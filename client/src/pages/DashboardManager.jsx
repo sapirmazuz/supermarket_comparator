@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import api from '../services/api';
 import { getUser } from '../services/auth';
-import { useLocation } from 'react-router-dom';
+// import { useLocation } from 'react-router-dom';
 import CommentSection from '../components/CommentSection';
 import '../css/products.css';
-
+import { useLocation, useNavigate } from 'react-router-dom';
+import cartIcon from '../assets/cart.png';
 
 export default function DashboardManager() {
   const [catalog, setCatalog] = useState([]);
@@ -19,6 +20,8 @@ export default function DashboardManager() {
   const params = new URLSearchParams(location.search);
   const view = params.get('view'); // ⬅️ הוסף את זה
   const category = params.get('category'); // ⬅️ כבר יש לך את זה
+  const navigate = useNavigate();
+
 
 useEffect(() => {
   if (view === 'assign') {
@@ -34,7 +37,7 @@ useEffect(() => {
         setMessage(status === 403 ? 'אין הרשאה (התחברי כמנהל)' : 'שגיאה בטעינת המוצרים שלך');
       });
   }
-}, [view, category, user?.role]);
+}, [view, category]);
 
 
   const handleAssignProduct = async (product_id) => {
@@ -83,15 +86,36 @@ return (
     {view === 'assign' ? (
       <>
         <div className="catalog-header">
-          <div className="search">
-            <input
-              type="text"
-              placeholder="🔍 חפש מוצר או מותג..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-        </div>
+  <div className="search">
+    <input
+      type="text"
+      placeholder="🔍 חפש מוצר או מותג..."
+      value={searchQuery}
+      onChange={(e) => setSearchQuery(e.target.value)}
+    />
+  </div>
+
+  <div className="quick-actions">
+    <button
+      className="qa-btn"
+      onClick={() => navigate('/dashboard?view=manage')}
+      title="המוצרים שלי"
+    >
+      <img src={cartIcon} alt="המוצרים שלי" />
+      <span>המוצרים שלי</span>
+    </button>
+
+    <button
+      className="qa-btn"
+      onClick={() => navigate('/')}
+      title="חזרה לבית"
+    >
+      <span className="qa-back" aria-hidden>↩</span>
+      <span>חזור</span>
+    </button>
+  </div>
+</div>
+
 
         <h2 className="text-xl font-bold" style={{ margin: '8px 0 12px' }}>
           🛒 שיוך מוצרים לסופר שלך
@@ -162,9 +186,14 @@ return (
       </>
     ) : (
       <div className="manage-panel">
-        <div className="manage-header">
-          <h2 className="manage-title">ניהול המוצרים שלך</h2>
-        </div>
+      <div className="manage-header manage-header-with-back">
+  <button className="qa-btn manage-back" onClick={() => navigate('/')} title="חזרה לבית">
+    <span className="qa-back" aria-hidden>↩</span>
+    <span>חזור</span>
+  </button>
+
+  <h2 className="manage-title">ניהול המוצרים שלך</h2>
+</div>
 
         <div className="manage-search">
           <input

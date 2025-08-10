@@ -42,17 +42,25 @@ const [user, setUser] = useState(null); // ⬅️ התחלה ריקה
     <Router>
       <LayoutWithNavbar>
         <Routes>
+          {/* דף הבית כברירת מחדל */}
           <Route path="/" element={<Home />} />
-          {/* <Route path="/" element={<Navigate to="/products" />} /> */}
+          {/* אליאס לכתובת /home אם יש קישורים ישנים */}
+          <Route path="/home" element={<Navigate to="/" replace />} />
+
+          {/* דפים נוספים */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/products" element={<Products />} />
           <Route path="/compare" element={<Compare />} />
+
+          {/* דשבורד מוגן למנהלים */}
           <Route
             path="/dashboard"
-            element={user?.role === 'manager' ? <DashboardManager /> : <Navigate to="/products" />}
+            element={user?.role === 'manager' ? <DashboardManager /> : <Navigate to="/products" replace />}
           />
-           <Route path="*" element={<Navigate to="/" />} /> {/* ברירת מחדל */}
+
+          {/* כל נתיב לא קיים → בית */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </LayoutWithNavbar>
     </Router>

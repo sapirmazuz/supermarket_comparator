@@ -52,22 +52,30 @@ const goToCart = () => {
  return (
     <div className="homepage">
       <header className="header">
-        <div className="cart-icon" onClick={goToCart}>
-          <img src={cartIcon} alt="עגלה" />
-        </div>
-        <h1 className="logo">השוואת מחירי סופרים</h1>
+  {/* קבוצה: אייקון עגלה + כותרת צמודים */}
+  <div className="brand">
+    <div className="cart-icon" onClick={goToCart}>
+      <img src={cartIcon} alt="עגלה" />
+      <span className="cart-label">העגלה שלי</span>
+    </div>
+    <h1 className="logo">השוואת מחירי סופרים</h1>
+  </div>
 
-        <div className="search-wrap">
-          <input
-            className="search-bar"
-            placeholder="חיפוש מוצר..."
-            value={term}
-            onChange={(e) => setTerm(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && doSearch()}
-          />
-          <button className="search-btn" onClick={doSearch}>חפש</button>
-        </div>
-      </header>
+  {/* שדה חיפוש ממורכז באמצע */}
+  <div className="search-wrap">
+    <input
+      className="search-bar"
+      placeholder="חיפוש מוצר..."
+      value={term}
+      onChange={(e) => setTerm(e.target.value)}
+      onKeyDown={(e) => e.key === 'Enter' && doSearch()}
+    />
+  </div>
+
+  {/* ספייסר לסידור מושלם של האמצע */}
+  <div className="header-spacer" />
+</header>
+
 
       <section className="categories">
         {categories.map(cat => (

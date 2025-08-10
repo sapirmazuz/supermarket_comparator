@@ -412,3 +412,78 @@ body{ background:var(--bg); color:var(--ink); }
   display: flex;
   gap: 6px;
 }
+
+/* פעולות מהירות בקטלוג (עגלה + חזור) */
+.quick-actions{
+  display:flex; align-items:center; gap:12px;
+}
+.qa-btn{
+  display:flex; flex-direction:column; align-items:center; gap:4px;
+  height:64px; width:86px; padding:6px 8px;
+  border:1px solid #e5e7eb; background:#fff; border-radius:12px;
+  box-shadow:0 6px 18px rgba(0,0,0,.06);
+  cursor:pointer; transition:background .15s, border-color .15s, transform .05s;
+}
+.qa-btn:hover{ background:#f7fbfe; border-color:#dbe6ee; }
+.qa-btn img{ width:26px; height:26px; object-fit:contain; }
+.qa-btn span{ font-size:12px; color:#6b7280; user-select:none; }
+.qa-back{ font-size:22px; line-height:1; }
+
+/* שמירה על פריסה עם השדה */
+.catalog-header{ grid-template-columns:1fr auto; gap:12px; }
+@media (max-width:640px){
+  .catalog-header{ grid-template-columns:1fr; }
+  .quick-actions{ justify-content:center; }
+}
+
+/* הכותרת עם כפתור חזור – באותה שורה, הכותרת תמיד באמצע */
+.cart-panel .cart-header-with-back{
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center; /* הכותרת ממורכזת לרוחב כל הפאנל */
+  margin-bottom: 14px;
+}
+
+/* הכפתור ממוקם בצד ימין (ב-RTL), ומרכז את התוכן בתוך הכרטיסון */
+.cart-panel .cart-back{
+  position: absolute;
+  inset-inline-start: 12px;   /* ימין ב-RTL, שמאל ב-LTR */
+  top: 50%;
+  transform: translateY(-50%); /* מרכוז אנכי בתוך שורת הכותרת */
+  height: 56px;
+  width: 86px;
+  justify-content: center;     /* מרכוז לאורך הציר הראשי (טור) */
+  align-items: center;          /* מרכוז רוחבי */
+}
+
+/* לוודא שהכרטיסון עצמו מרכז תוכן (גם מחוץ לעגלה) */
+.qa-btn{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;      /* זה מה שמצמיד את האייקון+טקסט לאמצע המסגרת */
+}
+
+/* manage: כותרת ממורכזת + כפתור חזור בצד ימין (RTL) באותה שורה */
+.manage-header.manage-header-with-back{
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;     /* הכותרת במרכז הפאנל */
+  gap: 6px;
+}
+
+/* הכפתור ממורכז בתוך המסגרת שלו וממוקם לצד ימין של השורה */
+.manage-header .manage-back{
+  position: absolute;
+  inset-inline-start: 12px;    /* ימין ב-RTL */
+  top: 50%;
+  transform: translateY(-50%); /* מרכוז אנכי */
+  height: 56px;
+  width: 86px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;     /* מרכז את האיקון+טקסט */
+  align-items: center;
+}
