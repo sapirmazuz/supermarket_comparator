@@ -6,6 +6,7 @@ import CommentSection from '../components/CommentSection';
 import '../css/products.css';
 import { useLocation, useNavigate } from 'react-router-dom';
 import cartIcon from '../assets/cart.png';
+import { getLocalPackshot } from '../utils/thumbs';
 
 export default function DashboardManager() {
   const [catalog, setCatalog] = useState([]);
@@ -162,7 +163,15 @@ return (
               <div key={p.id} className="card">
                 <div className="card-head">
                   {/* תמונה אמיתית? <img className="thumb" src={p.image_url} alt={p.name} /> */}
-                  <div className="thumb">תמונה</div>
+                  <div className="thumb">
+  <img
+    src={getLocalPackshot(p)}   // הפונקציה תחזיר URL או /placeholder.svg
+    alt={p.name}
+    loading="lazy"
+    decoding="async"
+  />
+</div>
+
                   <div>
                     <div className="title">{p.name}</div>
                     <div className="sub">

@@ -1,6 +1,6 @@
 // pages/Products.jsx
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { getUser } from '../services/auth';
 import api from '../services/api';
 import CommentSection from '../components/CommentSection';
@@ -23,6 +23,12 @@ export default function Products() {
   const [quantities, setQuantities] = useState({});
   const category = new URLSearchParams(location.search).get('category');
 const qParam = new URLSearchParams(location.search).get('q') || '';
+// מזהה מוצר אחיד: תומך גם ב{id} וגם ב{product_id}
+const getPid = (x) => x?.product_id ?? x?.id;
+
+// סט מזהים מהעגלה לבדיקת "האם כבר בעגלה"
+const cartIds = useMemo(() => new Set(cart.map(item => getPid(item))), [cart]);
+
 
 const goToCart = () => {
   if (user?.role === 'manager') navigate('/dashboard?view=manage');
@@ -61,7 +67,11 @@ const fetchCatalog = async () => {
 
 
   const addToCart = async (product) => {
-  if (cart.find(p => p.id === product.id)) return;
+    if (cartIds.has(getPid(product))) {
+      setMessage('⚠️ המוצר כבר בעגלה');
+      setTimeout(() => setMessage(''), 2000);
+      return;
+    }
 
   const quantity = quantities[product.id] || 1;
 
@@ -125,196 +135,229 @@ useEffect(() => {
 }, [qParam]);
 
 return (
-  <div className="catalog">
-    {view === 'catalog' && (
-      <>
-        <div className="catalog-header">
-  <div className="search">
-    <input
-      type="text"
-      placeholder="🔍 חיפוש מוצר, מותג או קטגוריה…"
-      value={searchQuery}
-      onChange={(e) => setSearchQuery(e.target.value)}
-    />
-  </div>
+    <div className="catalog">
+      {view === 'catalog' && (
+        <>
+          <div className="catalog-header">
+            <div className="search">
+              <input
+                type="text"
+                placeholder="🔍 חיפוש מוצר, מותג או קטגוריה…"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
 
-  <div className="quick-actions">
-    <button className="qa-btn" onClick={goToCart} title="העגלה שלי">
-      <img src={cartIcon} alt="עגלה" />
-      <span>העגלה שלי</span>
-    </button>
+            <div className="quick-actions">
+              <button className="qa-btn" onClick={goToCart} title="העגלה שלי">
+                <img src={cartIcon} alt="עגלה" />
+                <span>העגלה שלי</span>
+              </button>
 
-    <button className="qa-btn" onClick={goHome} title="חזרה לבית">
-      <span className="qa-back" aria-hidden>↩</span>
-      <span>חזור</span>
-    </button>
-  </div>
-</div>
+              <button className="qa-btn" onClick={goHome} title="חזרה לבית">
+                <span className="qa-back" aria-hidden>
+                  ↩
+                </span>
+                <span>חזור</span>
+              </button>
+            </div>
+          </div>
 
-        <h2 className="text-xl font-bold" style={{ margin: '8px 0 12px' }}>
-          🛒 קטלוג מוצרים
-        </h2>
+          <h2 className="text-xl font-bold" style={{ margin: '8px 0 12px' }}>
+            🛒 קטלוג מוצרים
+          </h2>
 
-        <div className="cards">
-          {products
-            .filter(
-              (p) =>
-                p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                p.brand.toLowerCase().includes(searchQuery.toLowerCase())
-            )
-            .map((p) => (
-              <div key={p.id} className="card">
-                <div className="card-head">
-                  <div className="thumb">
-  <img
-  src={getLocalPackshot(p)}
-  alt={p.name}
-  loading="lazy"
-  onError={(e) => { 
-    e.currentTarget.onerror = null; // חשוב!
-    e.currentTarget.src = '/placeholder.svg'; 
-  }}
-/>
+          <div className="cards">
+            {products
+              .filter(
+                (p) =>
+                  p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                  p.brand.toLowerCase().includes(searchQuery.toLowerCase())
+              )
+              .map((p) => {
+                const src = getLocalPackshot(p); // ← עשוי להיות string או null
+                return (
+                  <div key={p.id} className="card">
+                    <div className="card-head">
+                      <div className="thumb">
+                        {src ? (
+                          <img src={src} alt={p.name} loading="lazy" decoding="async" />
+                        ) : (
+                          <img src="/placeholder.svg" alt="" loading="lazy" decoding="async" />
+                        )}
+                      </div>
 
-</div>
-                  <div>
-                    <div className="title">{p.name}</div>
-                    <div className="sub">
-                      {p.brand} • {p.quantity}
-                    </div>
-                    {p.price && (
-                      <>
-                        <div className="price">₪{p.price}</div>
-                        <div className="per-unit">
-                          ₪{(p.price / (quantities[p.id] || 1)).toFixed(2)} ליח׳
+                      <div>
+                        <div className="title">{p.name}</div>
+                        <div className="sub">
+                          {p.brand} • {p.quantity}
                         </div>
-                      </>
-                    )}
+                        {p.price && (
+                          <>
+                            <div className="price">₪{p.price}</div>
+                            <div className="per-unit">
+                              ₪{(p.price / (quantities[p.id] || 1)).toFixed(2)} ליח׳
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="qty">
+                      <button
+                        type="button"
+                        className="step"
+                        onClick={() => {
+                          const current = quantities[p.id] || 1;
+                          const next = Math.max(1, current - 1);
+                          setQuantities({ ...quantities, [p.id]: next });
+                        }}
+                      >
+                        −
+                      </button>
+
+                      <input
+                        type="number"
+                        min="1"
+                        value={quantities[p.id] || 1}
+                        onChange={(e) =>
+                          setQuantities({
+                            ...quantities,
+                            [p.id]: Math.max(1, parseInt(e.target.value || '1', 10)),
+                          })
+                        }
+                      />
+
+                      <button
+                        type="button"
+                        className="step"
+                        onClick={() => {
+                          const current = quantities[p.id] || 1;
+                          setQuantities({ ...quantities, [p.id]: current + 1 });
+                        }}
+                      >
+                        +
+                      </button>
+                    </div>
+                    {(() => {
+                      const inCart = cartIds.has(getPid(p));
+                      return (
+                        <button
+                          className="add"
+                          onClick={() => !inCart && addToCart(p)}
+                          disabled={inCart}
+                          title={inCart ? 'כבר בעגלה' : 'הוסף לעגלה'}
+                        >
+                          {inCart ? 'כבר בעגלה' : '➕ הוסף לעגלה'}
+                        </button>
+                      );
+                    })()}
+
                   </div>
-                </div>
+                );
+              })}
+          </div>
 
-                <div className="qty">
-                  <button
-                    type="button"
-                    className="step"
-                    onClick={() => {
-                      const current = quantities[p.id] || 1;
-                      const next = Math.max(1, current - 1);
-                      setQuantities({ ...quantities, [p.id]: next });
-                    }}
-                  >
-                    −
-                  </button>
+          {message && <p className="message">{message}</p>}
+        </>
+      )}
 
-                  <input
-                    type="number"
-                    min="1"
-                    value={quantities[p.id] || 1}
-                    onChange={(e) =>
-                      setQuantities({
-                        ...quantities,
-                        [p.id]: Math.max(1, parseInt(e.target.value || '1', 10)),
-                      })
-                    }
-                  />
+      {view === 'cart' && (
+        <div className="cart-panel" style={{ marginTop: 12 }}>
+          {/* הכותרת + כפתור חזור באותה שורה */}
+          <div className="cart-header cart-header-with-back">
+            <button className="qa-btn cart-back" onClick={goHome} title="חזרה לבית">
+              <span className="qa-back" aria-hidden>
+                ↩
+              </span>
+              <span>חזור</span>
+            </button>
 
-                  <button
-                    type="button"
-                    className="step"
-                    onClick={() => {
-                      const current = quantities[p.id] || 1;
-                      setQuantities({ ...quantities, [p.id]: current + 1 });
-                    }}
-                  >
-                    +
-                  </button>
-                </div>
+            <h2 className="cart-title">העגלה שלי</h2>
+          </div>
 
-                <button className="add" onClick={() => addToCart(p)}>
-                  ➕ הוסף לעגלה
-                </button>
-              </div>
-            ))}
+          {cart.length > 0 && (
+            <div className="cart-actions">
+              <button onClick={() => navigate('/compare')} className="btn btn-primary">
+                חשב את הסופר הכי משתלם
+              </button>
+              <button onClick={clearCart} className="btn btn-danger">
+                נקה את העגלה
+              </button>
+            </div>
+          )}
+
+          {cart.length === 0 ? (
+            <p className="cart-empty">לא נוספו מוצרים לעגלה.</p>
+          ) : (
+            <ul className="cart-list">
+              {cart.map((p) => {
+                const src = getLocalPackshot(p); // ← כמו בקטלוג
+                return (
+                  <li key={p.id} className="cart-item">
+                    <div className="cart-left">
+                      <div className="thumb">
+  {(() => {
+    // מנסים לשחזר את המוצר מהקטלוג כדי לקבל את ה-quantity המקורי (למפתח התמונה)
+    const cat = products.find(x => x.id === p.id);
+    const src = getLocalPackshot(cat || p);  // הפונקציה כבר מחזירה /placeholder.svg כשאין התאמה
+    return (
+      <img
+        src={src}
+        alt={p.name}
+        loading="lazy"
+        decoding="async"
+      />
+    );
+  })()}
+</div>
+
+                      <div>
+                        <div className="item-title">
+                          {p.name} ({p.brand})
+                        </div>
+                        <input
+                          type="number"
+                          min="1"
+                          value={p.quantity}
+                          onChange={(e) => {
+                            const newQty = parseInt(e.target.value || '1', 10);
+                            if (newQty >= 1) updateCartQuantity(p.id, newQty);
+                          }}
+                          className="qty-input"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="item-actions">
+                      <button
+                        className="btn btn-outline"
+                        onClick={() =>
+                          setSelectedProduct({
+                            id: p.id,
+                            name: p.name,
+                            brand: p.brand,
+                            quantity: p.quantity,
+                          })
+                        }
+                      >
+                        תגובות
+                      </button>
+                      <button className="btn btn-danger" onClick={() => removeFromCart(p.id)}>
+                        הסר
+                      </button>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+
+          {selectedProduct && (
+            <CommentSection product={selectedProduct} onClose={() => setSelectedProduct(null)} />
+          )}
         </div>
-
-        {message && <p className="message">{message}</p>}
-      </>
-    )}
-
-    {view === 'cart' && (
-  <div className="cart-panel" style={{ marginTop: 12 }}>
-   {/* הכותרת + כפתור חזור באותה שורה */}
-    <div className="cart-header cart-header-with-back">
-      <button className="qa-btn cart-back" onClick={goHome} title="חזרה לבית">
-        <span className="qa-back" aria-hidden>↩</span>
-        <span>חזור</span>
-      </button>
-
-      <h2 className="cart-title">העגלה שלי</h2>
+      )}
     </div>
-
-    {cart.length > 0 && (
-      <div className="cart-actions">
-        <button onClick={() => navigate('/compare')} className="btn btn-primary">
-          חשב את הסופר הכי משתלם
-        </button>
-        <button onClick={clearCart} className="btn btn-danger">
-          נקה את העגלה
-        </button>
-      </div>
-    )}
-
-    {cart.length === 0 ? (
-      <p className="cart-empty">לא נוספו מוצרים לעגלה.</p>
-    ) : (
-      <ul className="cart-list">
-        {cart.map((p) => (
-          <li key={p.id} className="cart-item">
-            <div className="cart-left">
-              <div className="thumb">תמונה</div>
-              <div>
-                <div className="item-title">{p.name} ({p.brand})</div>
-                <input
-                  type="number"
-                  min="1"
-                  value={p.quantity}
-                  onChange={(e) => {
-                    const newQty = parseInt(e.target.value || '1', 10);
-                    if (newQty >= 1) updateCartQuantity(p.id, newQty);
-                  }}
-                  className="qty-input"
-                />
-              </div>
-            </div>
-
-            <div className="item-actions">
-              <button
-                className="btn btn-outline"
-                onClick={() =>
-                  setSelectedProduct({
-                    id: p.id,
-                    name: p.name,
-                    brand: p.brand,
-                    quantity: p.quantity,
-                  })
-                }
-              >
-                תגובות
-              </button>
-              <button className="btn btn-danger" onClick={() => removeFromCart(p.id)}>
-                הסר
-              </button>
-            </div>
-          </li>
-        ))}
-      </ul>
-    )}
-
-    {selectedProduct && (
-      <CommentSection product={selectedProduct} onClose={() => setSelectedProduct(null)} />
-    )}
-  </div>
-)}
-  </div>
-);
+  );
 }
