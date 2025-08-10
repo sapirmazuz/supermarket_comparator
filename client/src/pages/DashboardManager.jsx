@@ -21,6 +21,8 @@ export default function DashboardManager() {
   const view = params.get('view'); // ⬅️ הוסף את זה
   const category = params.get('category'); // ⬅️ כבר יש לך את זה
   const navigate = useNavigate();
+  const [assignedIds, setAssignedIds] = useState(new Set());
+
 
 
 useEffect(() => {
@@ -38,21 +40,6 @@ useEffect(() => {
       });
   }
 }, [view, category]);
-
-
-  const handleAssignProduct = async (product_id) => {
-    const { price, status } = assignments[product_id] || {};
-    if (!price || !status) {
-      setMessage('יש להזין מחיר וזמינות');
-      return;
-    }
-    try {
-      await api.post('/products/assign', { product_id, price, status });
-      setMessage('✔️ המוצר שויך בהצלחה');
-    } catch (error) {
-      setMessage('❌ שגיאה בשיוך המוצר');
-    }
-  };
 
   const updateProduct = async (product_id, newPrice, newStatus) => {
     try {
@@ -80,6 +67,46 @@ useEffect(() => {
       setMessage('❌ שגיאה במחיקת המוצר');
     }
   };
+
+// טוענים רשימת מוצרים ששויכו למנהל כדי לזהות כפילויות (רץ פעם כשיש מנהל מחובר)
+useEffect(() => {
+  if (user?.role === 'manager') {
+    api.get('/products/my')
+      .then(res => {
+        // לא חייבים לדרוס את myProducts כאן; העיקר לייצר את הסט לזיהוי כפילויות
+        const ids = new Set(res.data.map(p => p.product_id));
+        setAssignedIds(ids);
+      })
+      .catch(() => {/* שקט – לא מפריעים לזרימה */});
+  }
+}, [user?.role]);
+
+// בדיקת כפילות לפני שיוך
+const handleAssignProduct = async (product_id) => {
+  const { price, status } = assignments[product_id] || {};
+  if (!price || !status) {
+    setMessage('יש להזין מחיר וזמינות');
+    return;
+  }
+
+  // 👇 חסימת כפילות בצד לקוח
+  if (assignedIds.has(product_id)) {
+    setMessage('⚠️ המוצר כבר שויך לסופר שלך. ניתן לעדכן אותו במסך "ניהול המוצרים שלך".');
+    return;
+  }
+
+  try {
+    await api.post('/products/assign', { product_id, price, status });
+    setMessage('✔️ המוצר שויך בהצלחה');
+    // מוסיפים מיידית כדי לחסום לחיצות נוספות
+    setAssignedIds(prev => new Set(prev).add(product_id));
+    // אופציונלי: לרענן לגמרי את רשימת המוצרים המשוייכים
+    // const res = await api.get('/products/my');
+    // setAssignedIds(new Set(res.data.map(p => p.product_id)));
+  } catch (error) {
+    setMessage('❌ שגיאה בשיוך המוצר');
+  }
+};
 
 return (
   <div className={view === 'assign' ? 'catalog' : 'p-4'}>
@@ -175,9 +202,14 @@ return (
                   </select>
                 </div>
 
-                <button className="add" onClick={() => handleAssignProduct(p.id)}>
-                  ➕ שייך לסופר
+                <button
+                  className="add"
+                  onClick={() => handleAssignProduct(p.id)}
+                  disabled={assignedIds.has(p.id)}
+                >
+                  {assignedIds.has(p.id) ? 'כבר שויך' : '➕ שייך לסופר'}
                 </button>
+
               </div>
             ))}
         </div>

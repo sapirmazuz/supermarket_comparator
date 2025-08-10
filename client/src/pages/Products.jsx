@@ -8,6 +8,7 @@ import { useLocation } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import '../css/products.css';
 import cartIcon from '../assets/cart.png';
+import { getLocalPackshot } from '../utils/thumbs';
 
 export default function Products() {
   const [products, setProducts] = useState([]);
@@ -164,8 +165,18 @@ return (
             .map((p) => (
               <div key={p.id} className="card">
                 <div className="card-head">
-                  {/* אם תרצי תמונה אמיתית: <img className="thumb" src={p.image_url} alt={p.name} /> */}
-                  <div className="thumb">תמונה</div>
+                  <div className="thumb">
+  <img
+  src={getLocalPackshot(p)}
+  alt={p.name}
+  loading="lazy"
+  onError={(e) => { 
+    e.currentTarget.onerror = null; // חשוב!
+    e.currentTarget.src = '/placeholder.svg'; 
+  }}
+/>
+
+</div>
                   <div>
                     <div className="title">{p.name}</div>
                     <div className="sub">
