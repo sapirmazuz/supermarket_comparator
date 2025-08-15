@@ -5,6 +5,7 @@ const Supermarket = require('../models/supermarketsModels');
 
 exports.register = async (req, res) => {
   const { name, email, password, role, supermarketName, supermarketAddress } = req.body;
+console.log('🔔 REGISTER hit once', new Date().toISOString());
 
   try {
     const hashedPassword = await bcrypt.hash(password, 10);

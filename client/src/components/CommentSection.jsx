@@ -19,47 +19,49 @@ export default function CommentSection({ product, onClose }) {
   }, [product?.id]);
 
   const fetchComments = async () => {
-    try {
-      const res = await api.get(`/comments?product_id=${product.id}`);
-      setComments(res.data);
-    } catch (err) {
-      console.error('❌ שגיאה בשליפת תגובות:', err);
-    }
-  };
+  try {
+    const res = await api.get(`/comments?product_id=${product.id}`, {
+      headers: { Authorization: `Bearer ${user?.token}` },
+    });
+    setComments(res.data);
+  } catch (err) { console.error('❌ שגיאה בשליפת תגובות:', err); }
+};
 
-  const fetchSupermarkets = async () => {
-    try {
-      const res = await api.get('/supermarkets');
-      setSupermarkets(res.data);
-    } catch (err) {
-      console.error('❌ שגיאה בשליפת סופרים:', err);
-    }
-  };
+const fetchSupermarkets = async () => {
+  try {
+    const res = await api.get('/supermarkets', {
+      headers: { Authorization: `Bearer ${user?.token}` },
+    });
+    setSupermarkets(res.data);
+  } catch (err) { console.error('❌ שגיאה בשליפת סופרים:', err); }
+};
+
 
   const handleSubmit = async () => {
-    if (!text || !selectedSupermarket) return;
+  if (!text || !selectedSupermarket) return;
 
-    const formData = new FormData();
-    formData.append('text', text);
-    formData.append('image_url', file);
-    formData.append('product_id', product.id);
-    formData.append('supermarket_id', selectedSupermarket);
+  const formData = new FormData();
+  formData.append('text', text);
+  if (file) formData.append('image_url', file); // רק אם יש קובץ
+  formData.append('product_id', product.id);
+  formData.append('supermarket_id', selectedSupermarket);
 
-    try {
-      await api.post('/comments', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer ${user?.token}`
-        }
-      });
-      setText('');
-      setFile(null);
-      setSelectedSupermarket('');
-      fetchComments();
-    } catch (err) {
-      console.error('❌ שגיאה בשליחת תגובה:', err);
-    }
-  };
+  try {
+    await api.post('/comments', formData, {
+      headers: {
+        // אל תקבעי Content-Type ידנית! Axios יוסיף boundary לבד
+        Authorization: `Bearer ${user?.token}`,
+      },
+    });
+    setText('');
+    setFile(null);
+    setSelectedSupermarket('');
+    fetchComments();
+  } catch (err) {
+    console.error('❌ שגיאה בשליחת תגובה:', err);
+  }
+};
+
 
   const handleDelete = async (commentId) => {
     try {

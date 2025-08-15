@@ -18,6 +18,7 @@ export default function Register() {
 
   const handleRegister = async (e) => {
     e.preventDefault();
+    if (submitting) return;
     setError('');
     setSubmitting(true);
     try {

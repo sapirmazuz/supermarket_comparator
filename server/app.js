@@ -3,6 +3,7 @@
 const express = require('express');
 const cors = require('cors');
 const compareRoutes = require('./routes/compare');
+const path = require('path');  
 require('dotenv').config();
 
 const app = express();
@@ -10,7 +11,8 @@ const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
-app.use('/uploads', express.static('uploads'));
+// הגשה סטטית של התמונות: http://localhost:5000/uploads/<filename>
+app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
 // Routes
 app.use('/api/users', require('./routes/users'));
